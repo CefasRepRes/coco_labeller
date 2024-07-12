@@ -17,9 +17,9 @@ class COCOAnnotator(tk.Tk):
         self.current_image_index = 0
         self.photo = None  # Add a reference to the image
 
-        self.request_fields()
+        self.request_fields()  # Ask user for common and image-specific fields
 
-        self.setup_ui()
+        self.setup_ui()  # Set up the user interface
 
     def request_fields(self):
         print("Requesting common fields")
@@ -31,21 +31,23 @@ class COCOAnnotator(tk.Tk):
         print(f"Image fields: {self.image_fields}")
 
     def setup_ui(self):
+        # Buttons for selecting JSON file location and master directory
         self.select_json_button = tk.Button(self, text="Select JSON File Location", command=self.select_json_location)
         self.select_json_button.pack(pady=5)
 
         self.select_dir_button = tk.Button(self, text="Select Master Directory", command=self.select_master_directory)
         self.select_dir_button.pack(pady=5)
 
-        self.canvas = tk.Canvas(self, width=500, height=500)
+        self.canvas = tk.Canvas(self, width=500, height=500)  # Canvas to display images
         self.canvas.pack()
 
-        self.fields_frame = tk.Frame(self)
+        self.fields_frame = tk.Frame(self)  # Frame to hold input fields
         self.fields_frame.pack()
 
         self.next_button = tk.Button(self, text="Next Image", command=self.save_fields_and_next_image)
         self.next_button.pack(pady=5)
 
+        # Data structure for storing metadata
         self.data = {
             "info": {field: "" for field in self.common_fields},
             "images": []
@@ -80,8 +82,6 @@ class COCOAnnotator(tk.Tk):
                 self.images.append(file_path)
         print(f"Found {len(self.images)} images")
 
-
-
     def display_current_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
@@ -94,6 +94,7 @@ class COCOAnnotator(tk.Tk):
             for widget in self.fields_frame.winfo_children():
                 widget.destroy()
 
+            # Display folder name and create entry fields for image-specific fields
             folder_name = os.path.basename(os.path.dirname(image_path))
             tk.Label(self.fields_frame, text="Folder Name:").grid(row=0, column=0)
             self.folder_name_entry = tk.Entry(self.fields_frame)
@@ -113,6 +114,7 @@ class COCOAnnotator(tk.Tk):
         if self.images:
             image_path = self.images[self.current_image_index]
             print(f"Saving fields for image: {image_path}")
+            # Collect data from input fields
             image_data = {
                 "file_name": os.path.basename(image_path),
                 "folder_name": self.folder_name_entry.get(),
@@ -120,6 +122,7 @@ class COCOAnnotator(tk.Tk):
             }
             self.data["images"].append(image_data)
 
+            # Save data to JSON file
             with open(self.json_file_path, 'w') as json_file:
                 json.dump(self.data, json_file, indent=4)
 
