@@ -21,7 +21,7 @@ COCO Metadata Annotator is a simple tool to help you annotate image datasets wit
 2. **Install the required packages:**
 
     ```sh
-    pip install pillow
+    pip install pillow tkinter
     ```
 
 ## Requirements
