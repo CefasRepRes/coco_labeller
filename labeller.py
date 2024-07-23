@@ -4,7 +4,7 @@ import os
 import json
 from PIL import Image, ImageTk
 import torch
-from utils import resnet18, get_device, classify, extract_gps, save_to_files, LABELS
+from utils import resnet18, get_device, classify, extract_gps, save_to_files
 
 class COCOAnnotator(tk.Tk):
     def __init__(self):
@@ -42,19 +42,18 @@ class COCOAnnotator(tk.Tk):
             "predicted_label": "",
             "annotations": "",
             "categories": ""
-            
         }
 
         self.entries = {}
         self.checkboxes = {}
         self.selected_classes = set()
+        self.LABELS = []
 
         self.setup_ui()
         self.bind_keys()
 
         self.device = get_device()
         self.model = None
-        self.LABELS = []
 
     def setup_ui(self):
         self.select_labels_dir_button = tk.Button(self, text="Select directory for labels (output)", command=self.select_labels_directory)
@@ -71,6 +70,9 @@ class COCOAnnotator(tk.Tk):
 
         self.load_model_button = tk.Button(self, text="Load Model", command=self.load_model_dialog)
         self.load_model_button.grid(row=4, column=0, columnspan=2, pady=5, sticky="ew")
+
+        self.upload_labels_button = tk.Button(self, text="Upload Labels JSON", command=self.upload_labels_json)
+        self.upload_labels_button.grid(row=5, column=0, columnspan=2, pady=5, sticky="ew")
 
         self.main_frame = tk.Frame(self)
         self.main_frame.grid(row=6, column=0, columnspan=2, sticky="nsew")
@@ -161,19 +163,18 @@ class COCOAnnotator(tk.Tk):
                     entry.insert(0, default_value)
                 self.entries[field] = entry
 
-            label, scores = classify(image_path, self.device, self.model)
-            tk.Label(self.fields_frame, text="Predicted Label:").grid(row=len(self.image_fields) + 1, column=0)
-            self.predicted_label_entry = tk.Entry(self.fields_frame)
-            self.predicted_label_entry.grid(row=len(self.image_fields) + 1, column=1)
-            self.predicted_label_entry.insert(0, label)
-            self.entries["predicted_label"] = self.predicted_label_entry
+            if self.model:
+                label, scores = classify(image_path, self.device, self.model, self.LABELS)
+                tk.Label(self.fields_frame, text="Predicted Label:").grid(row=len(self.image_fields) + 1, column=0)
+                self.predicted_label_entry = tk.Entry(self.fields_frame)
+                self.predicted_label_entry.grid(row=len(self.image_fields) + 1, column=1)
+                self.predicted_label_entry.insert(0, label)
+                self.entries["predicted_label"] = self.predicted_label_entry
 
-            print(label)
-            print(self.selected_classes)
-            print(label not in self.selected_classes)
-            if label not in self.selected_classes:
-                # Skip to the next image
-                self.save_fields_and_next_image()  # Move the index increment and display logic to the save method
+                if label not in self.selected_classes:
+                    self.save_fields_and_next_image()
+            else:
+                messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
 
         else:
             print("No images found to display")
@@ -185,19 +186,23 @@ class COCOAnnotator(tk.Tk):
                 "file_name": os.path.basename(image_path),
                 "folder_name": self.folder_name_entry.get(),
                 **{field: self.entries[field].get() for field in self.image_fields},
-                "predicted_label": self.entries["predicted_label"].get()
+                "predicted_label": self.entries.get("predicted_label", "").get()
             }
             self.data["images"].append(image_data)
 
             self.current_image_index += 1
             while self.current_image_index < len(self.images):
                 image_path = self.images[self.current_image_index]
-                label, _ = classify(image_path, self.device, self.model)
-                if label in self.selected_classes:
-                    self.display_current_image()
-                    break
+                if self.model:
+                    label, _ = classify(image_path, self.device, self.model, self.LABELS)
+                    if label in self.selected_classes:
+                        self.display_current_image()
+                        break
+                    else:
+                        self.current_image_index += 1
                 else:
-                    self.current_image_index += 1
+                    messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
+                    break
             else:
                 messagebox.showinfo("Completed", "All images have been processed.")
                 save_to_files(self.data, self.labels_directory, self.output_name)
@@ -225,9 +230,8 @@ class COCOAnnotator(tk.Tk):
 
     def load_model(self, model_path):
         try:
-            model = resnet18(num_classes=len(LABELS)).to(self.device)
+            model = resnet18(num_classes=len(self.LABELS)).to(self.device)
             model.load_state_dict(torch.load(model_path, map_location=self.device))
-            self.LABELS = LABELS  # Assume LABELS is a predefined list of class labels
             return model
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load model: {e}")
@@ -239,17 +243,34 @@ class COCOAnnotator(tk.Tk):
             self.model = self.load_model(model_path)
             if self.model:
                 messagebox.showinfo("Model Loaded", f"Model loaded successfully from {model_path}")
-        if not self.LABELS:
-            messagebox.showwarning("No Labels", "No labels available. Load a model first.")
-            return
-        self.checkbox_window = tk.Toplevel(self)
-        self.checkbox_window.title("Select Classes")
+                if not self.LABELS:
+                    messagebox.showwarning("No Labels", "No labels available. Please upload labels JSON first.")
+                    return
+                self.checkbox_window = tk.Toplevel(self)
+                self.checkbox_window.title("Select Classes")
 
-        for label in self.LABELS:
-            var = tk.BooleanVar()
-            checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
-            checkbox.pack(anchor="w")
-            self.checkboxes[label] = var
+                for label in self.LABELS:
+                    var = tk.BooleanVar(value=True)  # Set the default value to True
+                    checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
+                    checkbox.pack(anchor="w")
+                    self.checkboxes[label] = var
+                    self.selected_classes.add(label)  # Add all labels to selected_classes by default
+
+    def upload_labels_json(self):
+        json_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+        if json_path:
+            try:
+                with open(json_path, 'r') as json_file:
+                    data = json.load(json_file)
+                    self.LABELS = data.get('labels', [])
+                    if not self.LABELS:
+                        messagebox.showwarning("No Labels Found", "No labels found in the JSON file.")
+                    else:
+                        messagebox.showinfo("Labels Loaded", f"Labels loaded successfully from {json_path}")
+                        if self.model:
+                            self.load_model_dialog()
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to load labels: {e}")
 
     def toggle_class(self, label):
         if self.checkboxes[label].get():

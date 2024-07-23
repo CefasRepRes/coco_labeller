@@ -9,12 +9,6 @@ import tifffile as tiff
 import exifread
 from io import BytesIO
 
-LABELS = [
-    1,
-    2,
-    3,
-]
-
 def resnet18(num_classes):
     model = torchvision.models.resnet18()
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
@@ -27,7 +21,7 @@ def get_device():
         device = torch.device("cuda")
     return device
 
-def classify(image_path, device, model):
+def classify(image_path, device, model, labels):
     image = tiff.imread(image_path)
     t = functional.to_tensor(image)
     t = functional.resize(t, (256, 256))
@@ -35,9 +29,9 @@ def classify(image_path, device, model):
     t = t.to(device)
     with torch.set_grad_enabled(False):
         outputs = model(t)
-        scores = torch.softmax(outputs, dim=1)  # Calculate softmax scores
+        scores = torch.softmax(outputs, dim=1)
         _, preds = torch.max(outputs, 1)
-    return LABELS[preds[0]], scores[0]  # Return label and scores
+    return labels[preds[0]], scores[0]
 
 def extract_gps(filename_or_bytes):
     try:
