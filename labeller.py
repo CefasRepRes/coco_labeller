@@ -39,41 +39,50 @@ class COCOAnnotator(tk.Tk):
             "what the partial part is": "",
             "person classifying": "",
             "uncertain about class": "",
+            "predicted_label": "",
             "annotations": "",
             "categories": ""
+            
         }
 
         self.entries = {}
+        self.checkboxes = {}
+        self.selected_classes = set()
+
         self.setup_ui()
         self.bind_keys()
 
         self.device = get_device()
-        self.model = self.load_model('model_18_21May.pth')
+        self.model = None
+        self.LABELS = []
 
     def setup_ui(self):
         self.select_labels_dir_button = tk.Button(self, text="Select directory for labels (output)", command=self.select_labels_directory)
-        self.select_labels_dir_button.pack(pady=5)
+        self.select_labels_dir_button.grid(row=0, column=0, columnspan=2, pady=5, sticky="ew")
 
         self.select_dir_button = tk.Button(self, text="Select directory for images (input)", command=self.select_image_directory)
-        self.select_dir_button.pack(pady=5)
+        self.select_dir_button.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
 
         self.import_config_button = tk.Button(self, text="Import labelling standard", command=self.import_config)
-        self.import_config_button.pack(pady=5)
+        self.import_config_button.grid(row=2, column=0, columnspan=2, pady=5, sticky="ew")
 
         self.process_all_button = tk.Button(self, text="Process All", command=self.process_all_images)
-        self.process_all_button.pack(pady=5)
+        self.process_all_button.grid(row=3, column=0, columnspan=2, pady=5, sticky="ew")
 
         self.load_model_button = tk.Button(self, text="Load Model", command=self.load_model_dialog)
-        self.load_model_button.pack(pady=5)
+        self.load_model_button.grid(row=4, column=0, columnspan=2, pady=5, sticky="ew")
 
-        self.canvas = tk.Canvas(self, width=500, height=500)
-        self.canvas.pack()
+        self.main_frame = tk.Frame(self)
+        self.main_frame.grid(row=6, column=0, columnspan=2, sticky="nsew")
 
-        self.fields_frame = tk.Frame(self)
-        self.fields_frame.pack()
+        self.canvas = tk.Canvas(self.main_frame, width=500, height=500)
+        self.canvas.grid(row=0, column=0, padx=5, pady=5)
+
+        self.fields_frame = tk.Frame(self.main_frame)
+        self.fields_frame.grid(row=0, column=1, padx=5, pady=5, sticky="ns")
 
         self.next_button = tk.Button(self, text="Next Image", command=self.save_fields_and_next_image)
-        self.next_button.pack(pady=5)
+        self.next_button.grid(row=7, column=0, columnspan=2, pady=5, sticky="ew")
 
         self.data = {
             "info": self.common_fields,
@@ -117,7 +126,7 @@ class COCOAnnotator(tk.Tk):
                 file_path = os.path.join(dp, f)
                 if f.lower().endswith(valid_extensions):
                     self.images.append(file_path)
-
+                    
     def display_current_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
@@ -152,13 +161,19 @@ class COCOAnnotator(tk.Tk):
                     entry.insert(0, default_value)
                 self.entries[field] = entry
 
-            # Classify the image and add the predicted label
             label, scores = classify(image_path, self.device, self.model)
             tk.Label(self.fields_frame, text="Predicted Label:").grid(row=len(self.image_fields) + 1, column=0)
             self.predicted_label_entry = tk.Entry(self.fields_frame)
             self.predicted_label_entry.grid(row=len(self.image_fields) + 1, column=1)
             self.predicted_label_entry.insert(0, label)
             self.entries["predicted_label"] = self.predicted_label_entry
+
+            print(label)
+            print(self.selected_classes)
+            print(label not in self.selected_classes)
+            if label not in self.selected_classes:
+                # Skip to the next image
+                self.save_fields_and_next_image()  # Move the index increment and display logic to the save method
 
         else:
             print("No images found to display")
@@ -175,8 +190,14 @@ class COCOAnnotator(tk.Tk):
             self.data["images"].append(image_data)
 
             self.current_image_index += 1
-            if self.current_image_index < len(self.images):
-                self.display_current_image()
+            while self.current_image_index < len(self.images):
+                image_path = self.images[self.current_image_index]
+                label, _ = classify(image_path, self.device, self.model)
+                if label in self.selected_classes:
+                    self.display_current_image()
+                    break
+                else:
+                    self.current_image_index += 1
             else:
                 messagebox.showinfo("Completed", "All images have been processed.")
                 save_to_files(self.data, self.labels_directory, self.output_name)
@@ -203,22 +224,38 @@ class COCOAnnotator(tk.Tk):
             messagebox.showinfo("Completed", "All images have been processed.")
 
     def load_model(self, model_path):
-        """Load a model from a file."""
         try:
             model = resnet18(num_classes=len(LABELS)).to(self.device)
             model.load_state_dict(torch.load(model_path, map_location=self.device))
+            self.LABELS = LABELS  # Assume LABELS is a predefined list of class labels
             return model
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load model: {e}")
             return None
 
     def load_model_dialog(self):
-        """Open a file dialog to select a model file and load it."""
         model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
         if model_path:
             self.model = self.load_model(model_path)
             if self.model:
                 messagebox.showinfo("Model Loaded", f"Model loaded successfully from {model_path}")
+        if not self.LABELS:
+            messagebox.showwarning("No Labels", "No labels available. Load a model first.")
+            return
+        self.checkbox_window = tk.Toplevel(self)
+        self.checkbox_window.title("Select Classes")
+
+        for label in self.LABELS:
+            var = tk.BooleanVar()
+            checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
+            checkbox.pack(anchor="w")
+            self.checkboxes[label] = var
+
+    def toggle_class(self, label):
+        if self.checkboxes[label].get():
+            self.selected_classes.add(label)
+        else:
+            self.selected_classes.discard(label)
 
 if __name__ == "__main__":
     app = COCOAnnotator()

@@ -10,9 +10,9 @@ import exifread
 from io import BytesIO
 
 LABELS = [
-    "copepod",
-    "detritus",
-    "noncopepod",
+    1,
+    2,
+    3,
 ]
 
 def resnet18(num_classes):
