@@ -31,7 +31,9 @@ def classify(image_path, device, model, labels):
         outputs = model(t)
         scores = torch.softmax(outputs, dim=1)
         _, preds = torch.max(outputs, 1)
-    return labels[preds[0]], scores[0]
+    class_number = preds[0].item()
+    class_name = labels.get(class_number, "Unknown")
+    return class_name, scores[0]
 
 def extract_gps(filename_or_bytes):
     try:

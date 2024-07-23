@@ -47,7 +47,7 @@ class COCOAnnotator(tk.Tk):
         self.entries = {}
         self.checkboxes = {}
         self.selected_classes = set()
-        self.LABELS = []
+        self.LABELS = {}
 
         self.setup_ui()
         self.bind_keys()
@@ -128,7 +128,7 @@ class COCOAnnotator(tk.Tk):
                 file_path = os.path.join(dp, f)
                 if f.lower().endswith(valid_extensions):
                     self.images.append(file_path)
-                    
+
     def display_current_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
@@ -175,7 +175,6 @@ class COCOAnnotator(tk.Tk):
                     self.save_fields_and_next_image()
             else:
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
-
         else:
             print("No images found to display")
 
@@ -220,7 +219,7 @@ class COCOAnnotator(tk.Tk):
                     self.display_current_image()
 
     def process_all_images(self):
-        response = messagebox.askyesno("Confirm", "This will process all images in the directory and save to csv and json format based only on folder name. This will process a few thousand images in a minute. Note if you have lots of images, the program will be unresponsive while these are written. Continue?")
+        response = messagebox.askyesno("Confirm", "This will process all images in the directory and save to CSV and JSON format based only on folder name. This will process a few thousand images in a minute. Note if you have lots of images, the program will be unresponsive while these are written. Continue?")
         if response:
             while self.current_image_index < len(self.images):
                 self.save_fields_and_next_image()
@@ -249,7 +248,7 @@ class COCOAnnotator(tk.Tk):
                 self.checkbox_window = tk.Toplevel(self)
                 self.checkbox_window.title("Select Classes")
 
-                for label in self.LABELS:
+                for label in self.LABELS.values():
                     var = tk.BooleanVar(value=True)  # Set the default value to True
                     checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
                     checkbox.pack(anchor="w")
@@ -262,10 +261,11 @@ class COCOAnnotator(tk.Tk):
             try:
                 with open(json_path, 'r') as json_file:
                     data = json.load(json_file)
-                    self.LABELS = data.get('labels', [])
-                    if not self.LABELS:
+                    labels_dict = data.get('labels', {})
+                    if not labels_dict:
                         messagebox.showwarning("No Labels Found", "No labels found in the JSON file.")
                     else:
+                        self.LABELS = {int(num): name for num, name in labels_dict.items()}
                         messagebox.showinfo("Labels Loaded", f"Labels loaded successfully from {json_path}")
                         if self.model:
                             self.load_model_dialog()

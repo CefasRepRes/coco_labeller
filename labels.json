@@ -1,7 +1,7 @@
 {
-    "labels": [
-        1,
-        2,
-        3
-    ]
+    "labels": {
+        "0": "copepod",
+        "1": "detritus",
+        "2": "non_copepod"
+    }
 }
