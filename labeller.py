@@ -48,7 +48,7 @@ class COCOAnnotator(tk.Tk):
 
         self.device = get_device()
         self.model = resnet18(num_classes=len(LABELS)).to(self.device)
-        self.model.load_state_dict(torch.load('C:/Users/JR13/Documents/LOCAL_NOT_ONEDRIVE/rapid-plankton/edge-ai/models/model_18_21May.pth', map_location=self.device))
+        self.model.load_state_dict(torch.load('model_18_21May.pth', map_location=self.device))
 
     def setup_ui(self):
         self.select_labels_dir_button = tk.Button(self, text="Select directory for labels (output)", command=self.select_labels_directory)
