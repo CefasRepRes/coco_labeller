@@ -4,7 +4,7 @@ COCO Metadata Annotator is a simple tool to help you annotate image datasets wit
 
 ## Features
 
-- Define custom common fields and image-specific fields.
+- Define custom common fields and image-specific fields. Common fields are the fields common to all your images and you will only be prompted at the start for these (for example, survey). Image-specific fields are the metadata which vary between images.
 - Load images from a selected directory.
 - Annotate each image with specified fields.
 - Save the annotated data to a JSON file.
