@@ -56,23 +56,23 @@ class COCOAnnotator(tk.Tk):
         self.model = None
 
     def setup_ui(self):
-        self.select_labels_dir_button = tk.Button(self, text="Select directory for labels (output)", command=self.select_labels_directory)
-        self.select_labels_dir_button.grid(row=0, column=0, columnspan=2, pady=5, sticky="ew")
+        self.upload_labels_button = tk.Button(self, text="1: Provide model labels (.json file)", command=self.upload_labels_json)
+        self.upload_labels_button.grid(row=0, column=0, columnspan=2, pady=5, sticky="ew")
 
-        self.select_dir_button = tk.Button(self, text="Select directory for images (input)", command=self.select_image_directory)
-        self.select_dir_button.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
+        self.load_model_button = tk.Button(self, text="2: Provide model (.pth file)", command=self.load_model_dialog)
+        self.load_model_button.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
 
-        self.import_config_button = tk.Button(self, text="Import labelling standard", command=self.import_config)
-        self.import_config_button.grid(row=2, column=0, columnspan=2, pady=5, sticky="ew")
+        self.select_labels_dir_button = tk.Button(self, text="3: Provide directory for labels (my/saved/outputs/dir)", command=self.select_labels_directory)
+        self.select_labels_dir_button.grid(row=2, column=0, columnspan=2, pady=5, sticky="ew")
 
-        self.process_all_button = tk.Button(self, text="Process All", command=self.process_all_images)
-        self.process_all_button.grid(row=3, column=0, columnspan=2, pady=5, sticky="ew")
+        self.select_dir_button = tk.Button(self, text="4: Provide directory for images (my/input/images/library)", command=self.select_image_directory)
+        self.select_dir_button.grid(row=3, column=0, columnspan=2, pady=5, sticky="ew")
 
-        self.load_model_button = tk.Button(self, text="Load Model", command=self.load_model_dialog)
-        self.load_model_button.grid(row=4, column=0, columnspan=2, pady=5, sticky="ew")
+        self.import_config_button = tk.Button(self, text="Optional: Import custom labelling standard", command=self.import_config)
+        self.import_config_button.grid(row=4, column=0, columnspan=2, pady=5, sticky="ew")
 
-        self.upload_labels_button = tk.Button(self, text="Upload Labels JSON", command=self.upload_labels_json)
-        self.upload_labels_button.grid(row=5, column=0, columnspan=2, pady=5, sticky="ew")
+        self.process_all_button = tk.Button(self, text="Optional: Process All", command=self.process_all_images)
+        self.process_all_button.grid(row=5, column=0, columnspan=2, pady=5, sticky="ew")
 
         self.main_frame = tk.Frame(self)
         self.main_frame.grid(row=6, column=0, columnspan=2, sticky="nsew")
