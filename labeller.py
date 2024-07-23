@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 import os
+import json
 from PIL import Image, ImageTk
 import torch
 from utils import resnet18, get_device, classify, extract_gps, save_to_files, LABELS
@@ -47,8 +48,7 @@ class COCOAnnotator(tk.Tk):
         self.bind_keys()
 
         self.device = get_device()
-        self.model = resnet18(num_classes=len(LABELS)).to(self.device)
-        self.model.load_state_dict(torch.load('model_18_21May.pth', map_location=self.device))
+        self.model = self.load_model('model_18_21May.pth')
 
     def setup_ui(self):
         self.select_labels_dir_button = tk.Button(self, text="Select directory for labels (output)", command=self.select_labels_directory)
@@ -62,6 +62,9 @@ class COCOAnnotator(tk.Tk):
 
         self.process_all_button = tk.Button(self, text="Process All", command=self.process_all_images)
         self.process_all_button.pack(pady=5)
+
+        self.load_model_button = tk.Button(self, text="Load Model", command=self.load_model_dialog)
+        self.load_model_button.pack(pady=5)
 
         self.canvas = tk.Canvas(self, width=500, height=500)
         self.canvas.pack()
@@ -198,6 +201,24 @@ class COCOAnnotator(tk.Tk):
 
             save_to_files(self.data, self.labels_directory, self.output_name)
             messagebox.showinfo("Completed", "All images have been processed.")
+
+    def load_model(self, model_path):
+        """Load a model from a file."""
+        try:
+            model = resnet18(num_classes=len(LABELS)).to(self.device)
+            model.load_state_dict(torch.load(model_path, map_location=self.device))
+            return model
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load model: {e}")
+            return None
+
+    def load_model_dialog(self):
+        """Open a file dialog to select a model file and load it."""
+        model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
+        if model_path:
+            self.model = self.load_model(model_path)
+            if self.model:
+                messagebox.showinfo("Model Loaded", f"Model loaded successfully from {model_path}")
 
 if __name__ == "__main__":
     app = COCOAnnotator()
