@@ -11,13 +11,14 @@ class COCOAnnotator(tk.Tk):
         super().__init__()
         self.title("COCO Metadata Annotator")
 
-        self.image_directory = ""
-        self.labels_directory = ""
+
+        
         self.output_name = ""
-        self.images = []
         self.current_image_index = 0
         self.photo = None
+        self.model = None
 
+        
         self.common_fields = {
             "survey ID": "",
             "survey region": "",
@@ -47,13 +48,38 @@ class COCOAnnotator(tk.Tk):
         self.entries = {}
         self.checkboxes = {}
         self.selected_classes = set()
-        self.LABELS = {}
 
         self.setup_ui()
         self.bind_keys()
 
         self.device = get_device()
-        self.model = None
+        
+        
+        # Default labels, default model, all selected by default
+        with open("labels.json", 'r') as json_file:
+            data = json.load(json_file)
+            labels_dict = data.get('labels', {})
+            self.LABELS = {int(num): name for num, name in labels_dict.items()}        
+        arch = resnet18(num_classes=len(self.LABELS)).to(self.device)
+        arch.load_state_dict(torch.load("model_18_21May.pth", map_location=self.device))
+        self.model = arch
+        print("loaded example model and model labels")
+        print(self.LABELS)
+        print(self.model)
+        self.checkbox_window = tk.Toplevel(self)
+        self.checkbox_window.title("Select Classes")
+        for label in self.LABELS.values():
+            var = tk.BooleanVar(value=True)  # Set the default value to True
+            checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
+            checkbox.pack(anchor="w")
+            self.checkboxes[label] = var
+            self.selected_classes.add(label)  # Add all labels to selected_classes by default
+            
+        # Default images
+        self.image_directory = str(os.getcwd())+"/example_images_folder"
+        self.labels_directory = str(os.getcwd())+"/example_images_folder"
+        self.load_images()
+        self.display_current_image()        
 
     def setup_ui(self):
         self.upload_labels_button = tk.Button(self, text="1: Provide model labels (.json file)", command=self.upload_labels_json)
@@ -227,6 +253,24 @@ class COCOAnnotator(tk.Tk):
             save_to_files(self.data, self.labels_directory, self.output_name)
             messagebox.showinfo("Completed", "All images have been processed.")
 
+    def upload_labels_json(self):
+        json_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+        if json_path:
+            try:
+                with open(json_path, 'r') as json_file:
+                    data = json.load(json_file)
+                    labels_dict = data.get('labels', {})
+                    if not labels_dict:
+                        messagebox.showwarning("No Labels Found", "No labels found in the JSON file.")
+                    else:
+                        self.LABELS = {int(num): name for num, name in labels_dict.items()}
+                        messagebox.showinfo("Labels Loaded", f"Labels loaded successfully from {json_path}")
+                        if self.model:
+                            self.load_model_dialog()
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to load labels: {e}")
+
+
     def load_model(self, model_path):
         try:
             model = resnet18(num_classes=len(self.LABELS)).to(self.device)
@@ -235,6 +279,7 @@ class COCOAnnotator(tk.Tk):
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load model: {e}")
             return None
+            
 
     def load_model_dialog(self):
         model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
@@ -255,22 +300,6 @@ class COCOAnnotator(tk.Tk):
                     self.checkboxes[label] = var
                     self.selected_classes.add(label)  # Add all labels to selected_classes by default
 
-    def upload_labels_json(self):
-        json_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
-        if json_path:
-            try:
-                with open(json_path, 'r') as json_file:
-                    data = json.load(json_file)
-                    labels_dict = data.get('labels', {})
-                    if not labels_dict:
-                        messagebox.showwarning("No Labels Found", "No labels found in the JSON file.")
-                    else:
-                        self.LABELS = {int(num): name for num, name in labels_dict.items()}
-                        messagebox.showinfo("Labels Loaded", f"Labels loaded successfully from {json_path}")
-                        if self.model:
-                            self.load_model_dialog()
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to load labels: {e}")
 
     def toggle_class(self, label):
         if self.checkboxes[label].get():
