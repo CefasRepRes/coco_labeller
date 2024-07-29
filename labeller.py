@@ -131,6 +131,7 @@ class COCOAnnotator(tk.Tk):
         for i in range(1, 10):
             self.bind(f"<Alt-Key-{i}>", self.focus_nth_entry)
         self.bind("<Control-n>", lambda event: self.save_fields_and_next_image())
+        self.bind("<Control-s>", self.save_data)  # Bind Ctrl + S to save function
 
     def focus_nth_entry(self, event):
         try:
@@ -335,6 +336,14 @@ class COCOAnnotator(tk.Tk):
             self.selected_classes.add(label)
         else:
             self.selected_classes.discard(label)
+
+    def save_data(self, event=None):
+        if not self.output_name:
+            messagebox.showwarning("No Output Name", "Please provide an output name.")
+            return
+
+        save_to_files(self.data, self.labels_directory, self.output_name)
+        messagebox.showinfo("Data Saved", "Data has been saved successfully.")
 
 if __name__ == "__main__":
     app = COCOAnnotator()
