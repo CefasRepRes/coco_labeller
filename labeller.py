@@ -74,12 +74,12 @@ class COCOAnnotator(tk.Tk):
             self.selected_classes.add(label)  # Add all labels to selected_classes by default
         
         # Create score filters
-        tk.Label(self.checkbox_window, text="Min Prediction Score:").pack(anchor="w")
+        tk.Label(self.checkbox_window, text="Prediction scores above:").pack(anchor="w")
         self.min_score_entry = tk.Entry(self.checkbox_window)
         self.min_score_entry.pack(anchor="w")
         self.min_score_entry.insert(0, "0.0")
 
-        tk.Label(self.checkbox_window, text="Max Prediction Score:").pack(anchor="w")
+        tk.Label(self.checkbox_window, text="Prediction scores below:").pack(anchor="w")
         self.max_score_entry = tk.Entry(self.checkbox_window)
         self.max_score_entry.pack(anchor="w")
         self.max_score_entry.insert(0, "1.0")
