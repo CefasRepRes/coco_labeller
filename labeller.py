@@ -11,14 +11,11 @@ class COCOAnnotator(tk.Tk):
         super().__init__()
         self.title("COCO Metadata Annotator")
 
-
-        
         self.output_name = ""
         self.current_image_index = 0
         self.photo = None
         self.model = None
 
-        
         self.common_fields = {
             "survey ID": "",
             "survey region": "",
@@ -53,8 +50,7 @@ class COCOAnnotator(tk.Tk):
         self.bind_keys()
 
         self.device = get_device()
-        
-        
+
         # Default labels, default model, all selected by default
         with open("labels.json", 'r') as json_file:
             data = json.load(json_file)
@@ -67,19 +63,32 @@ class COCOAnnotator(tk.Tk):
         print(self.LABELS)
         print(self.model)
         self.checkbox_window = tk.Toplevel(self)
-        self.checkbox_window.title("Select Classes")
+        self.checkbox_window.title("Select Classes and Scores")
+
+        # Create checkboxes for labels
         for label in self.LABELS.values():
             var = tk.BooleanVar(value=True)  # Set the default value to True
             checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
             checkbox.pack(anchor="w")
             self.checkboxes[label] = var
             self.selected_classes.add(label)  # Add all labels to selected_classes by default
-            
+        
+        # Create score filters
+        tk.Label(self.checkbox_window, text="Min Prediction Score:").pack(anchor="w")
+        self.min_score_entry = tk.Entry(self.checkbox_window)
+        self.min_score_entry.pack(anchor="w")
+        self.min_score_entry.insert(0, "0.0")
+
+        tk.Label(self.checkbox_window, text="Max Prediction Score:").pack(anchor="w")
+        self.max_score_entry = tk.Entry(self.checkbox_window)
+        self.max_score_entry.pack(anchor="w")
+        self.max_score_entry.insert(0, "1.0")
+
         # Default images
         self.image_directory = str(os.getcwd())+"/example_images_folder"
         self.labels_directory = str(os.getcwd())+"/example_images_folder"
         self.load_images()
-        self.display_current_image()        
+        self.display_current_image()
 
     def setup_ui(self):
         self.upload_labels_button = tk.Button(self, text="1: Provide model labels (.json file)", command=self.upload_labels_json)
@@ -197,8 +206,16 @@ class COCOAnnotator(tk.Tk):
                 self.predicted_label_entry.insert(0, label)
                 self.entries["predicted_label"] = self.predicted_label_entry
 
+                # Check score range using checkbox_window entries
+                min_score = float(self.min_score_entry.get())
+                max_score = float(self.max_score_entry.get())
+                if not (min_score <= scores.max().item() <= max_score):
+                    self.save_fields_and_next_image()
+                    return
+
                 if label not in self.selected_classes:
                     self.save_fields_and_next_image()
+                    return
             else:
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
         else:
@@ -219,8 +236,12 @@ class COCOAnnotator(tk.Tk):
             while self.current_image_index < len(self.images):
                 image_path = self.images[self.current_image_index]
                 if self.model:
-                    label, _ = classify(image_path, self.device, self.model, self.LABELS)
-                    if label in self.selected_classes:
+                    label, scores = classify(image_path, self.device, self.model, self.LABELS)
+                    
+                    # Check if label is in selected classes and score is in range
+                    min_score = float(self.min_score_entry.get())
+                    max_score = float(self.max_score_entry.get())
+                    if label in self.selected_classes and min_score <= scores.max().item() <= max_score:
                         self.display_current_image()
                         break
                     else:
@@ -270,7 +291,6 @@ class COCOAnnotator(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load labels: {e}")
 
-
     def load_model(self, model_path):
         try:
             model = resnet18(num_classes=len(self.LABELS)).to(self.device)
@@ -279,7 +299,6 @@ class COCOAnnotator(tk.Tk):
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load model: {e}")
             return None
-            
 
     def load_model_dialog(self):
         model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
@@ -291,7 +310,7 @@ class COCOAnnotator(tk.Tk):
                     messagebox.showwarning("No Labels", "No labels available. Please upload labels JSON first.")
                     return
                 self.checkbox_window = tk.Toplevel(self)
-                self.checkbox_window.title("Select Classes")
+                self.checkbox_window.title("Select Classes and Scores")
 
                 for label in self.LABELS.values():
                     var = tk.BooleanVar(value=True)  # Set the default value to True
@@ -300,6 +319,16 @@ class COCOAnnotator(tk.Tk):
                     self.checkboxes[label] = var
                     self.selected_classes.add(label)  # Add all labels to selected_classes by default
 
+                # Create score filters in checkbox_window
+                tk.Label(self.checkbox_window, text="Min Prediction Score:").pack(anchor="w")
+                self.min_score_entry = tk.Entry(self.checkbox_window)
+                self.min_score_entry.pack(anchor="w")
+                self.min_score_entry.insert(0, "0.0")
+
+                tk.Label(self.checkbox_window, text="Max Prediction Score:").pack(anchor="w")
+                self.max_score_entry = tk.Entry(self.checkbox_window)
+                self.max_score_entry.pack(anchor="w")
+                self.max_score_entry.insert(0, "1.0")
 
     def toggle_class(self, label):
         if self.checkboxes[label].get():
