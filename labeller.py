@@ -15,6 +15,7 @@ class COCOAnnotator(tk.Tk):
         self.current_image_index = 0
         self.photo = None
         self.model = None
+        self.labeled_images_count = 0
 
         self.common_fields = {
             "survey ID": "",
@@ -222,9 +223,24 @@ class COCOAnnotator(tk.Tk):
         else:
             print("No images found to display")
 
+
     def save_fields_and_next_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
+            if not self.model:
+                messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
+                return
+            
+            label, scores = classify(image_path, self.device, self.model, self.LABELS)
+            min_score = float(self.min_score_entry.get())
+            max_score = float(self.max_score_entry.get())
+
+            if label not in self.selected_classes or not (min_score <= scores.max().item() <= max_score):
+                self.current_image_index += 1
+                if self.current_image_index < len(self.images):
+                    self.display_current_image()
+                return
+
             image_data = {
                 "file_name": os.path.basename(image_path),
                 "folder_name": self.folder_name_entry.get(),
@@ -233,23 +249,14 @@ class COCOAnnotator(tk.Tk):
             }
             self.data["images"].append(image_data)
 
+            self.labeled_images_count += 1
+
+            if self.labeled_images_count % 5 == 0:
+                self.save_data()
+
             self.current_image_index += 1
-            while self.current_image_index < len(self.images):
-                image_path = self.images[self.current_image_index]
-                if self.model:
-                    label, scores = classify(image_path, self.device, self.model, self.LABELS)
-                    
-                    # Check if label is in selected classes and score is in range
-                    min_score = float(self.min_score_entry.get())
-                    max_score = float(self.max_score_entry.get())
-                    if label in self.selected_classes and min_score <= scores.max().item() <= max_score:
-                        self.display_current_image()
-                        break
-                    else:
-                        self.current_image_index += 1
-                else:
-                    messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
-                    break
+            if self.current_image_index < len(self.images):
+                self.display_current_image()
             else:
                 messagebox.showinfo("Completed", "All images have been processed.")
                 save_to_files(self.data, self.labels_directory, self.output_name)
