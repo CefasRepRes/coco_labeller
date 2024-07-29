@@ -14,7 +14,7 @@ COCO Metadata Annotator is a simple tool to help you annotate image datasets wit
 1. **Clone the repository:**
 
     ```sh
-    git clone https://github.com/yourusername/COCOAnnotator.git
+    git clone https://github.com/CefasRepRes/COCOAnnotator.git
     cd COCOAnnotator
     ```
 
@@ -35,7 +35,7 @@ COCO Metadata Annotator is a simple tool to help you annotate image datasets wit
 1. **Run the application:**
 
     ```sh
-    python coco_annotator.py
+    python labeller.py
     ```
 
 2. **Specify the common fields:**
