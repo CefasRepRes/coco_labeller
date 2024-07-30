@@ -1,0 +1,114 @@
+parent directory,Cefas images directory_name (NA indicate Cefas has no image for this taxon),Cefas image_count,Dutch taxonomy name,Dutch image count,Suggested name for taxonomic group,classification,AphiaID, Dutch Agree?,CEFAS Agree?,PML agree?,"Note, questions?",badforhumans,traits,model_18_21May.pth
+green-plant,Phyto_Volvox,1,,,Phyto_chlorophyceae_chlamydomonadales_Volvox,Phyto_chlorophyceae_chlamydomonadales_Volvox,,Y,Y,,,,,non_copepod
+Dutch dataset,NA,0,fytoplankton_phaeocystis,302,Phyto_Prymnesiophyceae_Phaeocystis,Phyto_Prymnesiophyceae_Phaeocystis,115088,Y,Y,,,,forms colonies,non_copepod
+Dutch dataset,NA,0,diaton_solitary_centric,64,Phyto_diatom-centric,Phyto_diatom,,,,,"[LvW] these might possibly be included in Phyto_diatom_coscinodiscales_Coscinodiscus I think , then this class could be removed; SPI: done",,,non_copepod
+Dutch dataset,NA,0,diatom_loop,387,Phyto_diatom-loop,Phyto_diatom,149013,Y,Y,,[LvW] These classes are useful in our current dataset as there was clear spatial variation in the abundance of these different classes. Should be merged into more detailed classes later on,,,non_copepod
+Dutch dataset,NA,0,diatom_straight,688,Phyto_diatom-straight,Phyto_diatom,149013,Y,Y,,[LvW] These classes are useful in our current dataset as there was clear spatial variation in the abundance of these different classes. Should be merged into more detailed classes later on,,,non_copepod
+Dutch dataset,NA,0,diatom_setae,383,Phyto_diatom_chaetocerotaceae,Phyto_diatom_chaetocerotaceae,,Y,Y,,"[LvW] these might actually be included in Phyto_diatom_chaetocerotanae_Chaetoceros I think , then this class could be removed",,,non_copepod
+green-plant,Phyto_Centrics,1142,NA,0,Phyto_diatom,Phyto_diatom,149013,Y,Y,,"""centric"" is a trait rather than taxonomic term. This will be for extra information? [LvW] I would not include centric (or pennate) as it overlaps with the other classes. ",,,non_copepod
+green-plant,Phyto_Chaetoceros,3029,,,Phyto_diatom_chaetocerotaceae_Chaetoceros,Phyto_diatom_chaetocerotaceae_Chaetoceros,148985,Y,Y,,,YES,"centric, chain forming",non_copepod
+green-plant,Phyto_Coscinodiscus,7,Phyto_diatom-centric,64,Phyto_diatom_coscinodiscales_Coscinodiscus,Phyto_diatom_coscinodiscales_Coscinodiscus,,Y,Y,,,,centric (ie symetry from center point),non_copepod
+green-plant,Phyto_Pleurosigmataceae,27,NA,0,Phyto_diatom_naviculales_pleurosigmataceae,Phyto_diatom_naviculales_pleurosigmataceae,,Y,Y,,,,Centric,non_copepod
+green-plant,Phyto_Guinardia-flaccida,146,NA,0,Phyto_diatom_rhisoleniales_Guinardia flaccida,Phyto_diatom_rhisoleniales_Guinardia flaccida,,Y,Y,,,,chaine forming,non_copepod
+green-plant,Phyto_Rhizosolenia,689,NA,0,Phyto_diatom_rhisoleniales_Rhizosolenia,Phyto_diatom_rhisoleniales_Rhizosolenia,,Y,Y,,,YES,,non_copepod
+green-plant,Phyto_Proboscia-truncata,64,NA,0,Phyto_diatom_rhisoleniales_Proboscia truncata,Phyto_diatom_rhisoleniales_Proboscia truncata,,Y,Y,,,,chain forming,non_copepod
+green-plant,Phyto_Lauderia,9,NA,0,Phyto_diatom_thalassiosirales_Lauderia,Phyto_diatom_thalassiosirales_Lauderia,,Y,Y,,,,"centric, chain forming of individual cylindrical cells",non_copepod
+green-plant,Phyto_Thalassiosira,14,NA,0,Phyto_diatom_thalassiosirales_Thalassiosira,Phyto_diatom_thalassiosirales_Thalassiosira,,Y,Y,,,,"centric, chain forming",non_copepod
+green-plant,Phyto_Triceratium,1,NA,0,Phyto_diatom_triceratiales_Triceriatium,Phyto_diatom_triceratiales_Triceriatium,,Y,Y,,,,centric,non_copepod
+green-plant,Phyto_Trigonium-alternans,1,NA,0,Phyto_diatom_triceratiales_Triceratium alternans,Phyto_diatom_triceratiales_Triceratium alternans,,Y,Y,,had to rename to triceratium as trigonium non valid,,centric,non_copepod
+green-plant,Phyto_Odontella,32,diatom_odontella,17,Phyto_diatom_triceratiales_Odontella,Phyto_diatom_triceratiales_Odontella,,Y,Y,,,,chain forming. Looks very different from other triceratiales,non_copepod
+green-plant,Phyto_Noctiluca,4,dinoflagellate_noctiluca_intact,799,Phyto_dinoflagellate_noctilucales_Noctiluca,Phyto_dinoflagellate_noctilucales_Noctiluca,,Y,Y,,,YES,,non_copepod
+green-plant,NA,,dinoflagellate_noctiluca_fragment,368,Phyto_dinoflagellate_noctilucales_Noctiluca-fragment,Phyto_dinoflagellate_noctilucales_Noctiluca,,Y,Y,,,,,non_copepod
+green-plant,Phyto_Protoperidinium,14,NA,0,Phyto_dinoflagellate_Peridinales_Protoperidinium,Phyto_dinoflagellate_Peridinales_Protoperidinium,,Y,Y,,,,,non_copepod
+Dutch dataset,NA,0,dinoflagellate_pyrocystis,60,Phyto_dinoflagellate_gonyaulacales_Pyrocystis,Phyto_dinoflagellate_gonyaulacales_Pyrocystis,,Y,Y,,,,,non_copepod
+green-plant,Phyto_Tripos,3040,NA,0,Phyto_dinoflagellate_gonyaulacales_Tripos,Phyto_dinoflagellate_gonyaulacales_Tripos,,Y,Y,,,YES,,non_copepod
+green-plant,Phyto_Tripos-lineatus,2,NA,0,Phyto_dinoflagellate_gonyaulacales_Tripos lineatus,Phyto_dinoflagellate_gonyaulacales_Tripos lineatus,,Y,Y,,,,,non_copepod
+green-plant,Phyto_Tripos-macroceros group,4315,NA,0,Phyto_dinoflagellate_gonyaulacales_Tripos macroceros,Phyto_dinoflagellate_gonyaulacales_Tripos macroceros,,Y,Y,,,YES,,non_copepod
+green-plant,Phyto_Tripos-tripos group,1029,NA,0,Phyto_dinoflagellate_gonyaulacales_Tripos muelleri,Phyto_dinoflagellate_gonyaulacales_Tripos muelleri,,Y,Y,,,YES,,non_copepod
+green-plant,Phyto_Tripos-platycorne,1,NA,0,Phyto_dinoflagellate_gonyaulacales_Tripos platycorne,Phyto_dinoflagellate_gonyaulacales_Tripos platycorne,,Y,Y,,,,,non_copepod
+green-plant,Phyto_Multiple,1,,,Phyto-other,Phyto_other,,Y,Y,,these are all unidentified phytoplankton,,,non_copepod
+ZOOPLANKTON,,,,,,,,,,,,,,non_copepod
+nice-nephrop,annelida_polychaeta,1,NA,NA,Zoo_annelida_polychaeta,Zoo_annelida_polychaeta,,,Y,,I am guessing that all polychates in images are larval stages? Shall we use Polychaete_larva? ,,,non_copepod
+Dutch dataset,NA,0,polychaete_aulophore,52,Zoo_annelida_polychaeta_Terebellidae-aulophore,Zoo_annelida_polychaeta_Terebellidae,,,Y,,Please definite stage,,,non_copepod
+,,,,,,,,,,,,,,non_copepod
+Dutch dataset,NA,0,polychaete_magelona,81,Zoo_annelida_polychaeta_Magelona-nectochaete,Zoo_annelida_polychaeta_Magelona,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,polychaete_mitraria,272,Zoo_annelida_polychaeta_oweniidae-mitraria,Zoo_annelida_polychaeta_oweniidae,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,polychaete_nectochaete,177,Zoo_annelida_polychaeta-nectochaete,Zoo_annelida_polychaeta,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,polychaete_nectosoma,12,Zoo_annelida_polychaeta_Poecilochaetus-nectosoma,Zoo_annelida_polychaeta_Poecilochaetus,,,Y,,this stage appears to be unique to the genus Poecilochaetus,,,non_copepod
+Dutch dataset,NA,0,polychaete_Tomopteris,2,Zoo_annelida_polychaeta_Tomopteris,Zoo_annelida_polychaeta_Tomopteris,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,polychaete_trochophore,29,Zoo_annelida_polychaeta-trochophore,Zoo_annelida_polychaeta,,,Y,,,,,non_copepod
+nice-nephrop,appendicularia,2,larvacea_body,202,Zoo_appendicularia-body,Zoo_appendicularia,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,larvacea_tail_only,186,Zoo_appendicularia-tail,Zoo_appendicularia,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,larvacea_Friitilaria_complete,57,Zoo_appendicularia_Friitilaria,Zoo_appendicularia_Friitilaria,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,larvacea_Oikopleura_complete,634,Zoo_appendicularia_Oikopleura,Zoo_appendicularia_Oikopleura,,,Y,,,,,non_copepod
+nice-nephrop,brachiopoda_larvae,35,,,Zoo_brachiopoda,Zoo_brachiopoda,,,Y,,,,,non_copepod
+nice-nephrop,branchiostomatidae,3,amphioxus_larva,10,Zoo_branchiostomatidae,Zoo_branchiostomatidae,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,Bryozoa_cyphonautes,4,Zoo_bryozoa-cyphonautes,Zoo_bryozoa,,,Y,,,,,non_copepod
+nice-nephrop,cnidaria,567,cnidaria,83,Zoo_cnidaria,Zoo_cnidaria,,,Y,,the images in this folder in the CEFAS trainingset are not Cnidaria but are ciliates (e.g. Ephelota sp.). See Larink & Westheide 2006 plate 14 N,,,non_copepod
+nice-nephrop,cnidaria_hydrozoa,2,,,Zoo_cnidaria_hydrozoa-medusa,Zoo_cnidaria_hydrozoa,,,Y,,"[LvW] I added ""medusa"" here to distinguish form the polyp class. OK? ",,,non_copepod
+nice-nephrop,cnidaria_hydrozoa_polyp,21,,,Zoo_cnidaria_hydrozoa-polyp,Zoo_cnidaria_hydrozoa,,,Y,,,,,non_copepod
+nice-nephrop,chaetognatha,19,chaetognath,6,Zoo_chaetognatha,Zoo_chaetognatha,,,Y,,,,,non_copepod
+nice-nephrop,chaetognatha_damaged,2,,,Zoo_chaetognatha-damaged,Zoo_chaetognatha,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,crustacea_megalopa,61,Zoo_crustacea,Zoo_crustacea,,,Y,,,,,non_copepod
+nice-nephrop,amphipoda_caprellidae,1,crustacea_caprella,3,Zoo_crustacea_amphipod_caprellidae,Zoo_crustacea_amphipod_caprellidae,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,crustacea_amphipoda,34,Zoo_crustacea_amphipod,Zoo_crustacea_amphipod,,,Y,,,,,non_copepod
+nice-nephrop,cirripedia_barnacle_cyprid,1,balanoid_cypris,4,Zoo_crustacea_cirripedia_barnacle-cypris,Zoo_crustacea_cirripedia_barnacle,,,Y,,,,,non_copepod
+,,,,,,,,,,,,,,non_copepod
+Dutch dataset,NA,0,balanoid_nauplius,38,Zoo_crustacea_cirripedia_barnacle-nauplius,Zoo_crustacea_cirripedia_barnacle,,,Y,,,,,non_copepod
+nice-nephrop,cladocera,2,,,Zoo_crustacea_cladocera,Zoo_crustacea_cladocera,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,cladocera_evadne,431,Zoo_crustacea_cladocera_Evadne,Zoo_crustacea_cladocera_Evadne,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,cladocera_podon_pleopis,478,Zoo_crustacea_cladocera_Podonidae,Zoo_crustacea_cladocera_Podonidae,,,Y,,[LvW] changed to Podonidae as Pleopis is included in this.,,,non_copepod
+nice-nephrop,copepod_unknown,6142,copepoda,1928,Zoo_crustacea_copepod,Zoo_crustacea_copepod,,,Y,,,,,copepod
+nice-nephrop,copepod_calanoida,1588,,,Zoo_crustacea_copepod_calanoida,Zoo_crustacea_copepod_calanoida,,,Y,,,,,copepod
+nice-nephrop,copepod_calanoida_acartia-spp,109,,,Zoo_crustacea_copepod_calanoida_Acartia,Zoo_crustacea_copepod_calanoida_Acartia,,,Y,,,,,copepod
+nice-nephrop,copepod_calanoida_calanus-spp,7,,,Zoo_crustacea_copepod_calanoida_Calanus,Zoo_crustacea_copepod_calanoida_Calanus,,,Y,,,,those one are much bigger than the others,copepod
+nice-nephrop,copepod_calanoida_centropages-spp,262,,,Zoo_crustacea_copepod_calanoida_Centropages,Zoo_crustacea_copepod_calanoida_Centropages,,,Y,,,,,copepod
+nice-nephrop,copepod_calanoida_temora-spp,74,,,Zoo_crustacea_copepod_calanoida_Temora,Zoo_crustacea_copepod_calanoida_Temora,,,Y,,,,,copepod
+nice-nephrop,copepod_cyclopoida,479,,,Zoo_crustacea_copepod_cyclopoida,Zoo_crustacea_copepod_cyclopoida,,,Y,,,,,copepod
+nice-nephrop,copepod_cyclopoida_oithona-spp,1326,,,Zoo_crustacea_copepod_cyclopoida_Oithona,Zoo_crustacea_copepod_cyclopoida_Oithona,,,Y,,,,,copepod
+nice-nephrop,copepod_cyclopoida_oncaea-spp,47,,,Zoo_crustacea_copepod_cyclopoida_Oncaea,Zoo_crustacea_copepod_cyclopoida_Oncaea,,,Y,,,,,copepod
+nice-nephrop,copepod_harpacticoida,3,,,Zoo_crustacea_copepod_harpacticoida,Zoo_crustacea_copepod_harpacticoida,,,Y,,,,will contain all unidentified copepods,copepod
+nice-nephrop,copepod_harpacticoida_euterpina,16,,,Zoo_crustacea_copepod_harpacticoida_Euterpina,Zoo_crustacea_copepod_harpacticoida_Euterpina,,,Y,,,,,copepod
+nice-nephrop,copepod_harpacticoida_microstella,4,,,Zoo_crustacea_copepod_harpacticoida_Microsetella,Zoo_crustacea_copepod_harpacticoida_Microsetella,,,Y,,,,,copepod
+Dutch dataset,NA,0,copepoda_monstrilloidae,1,Zoo_crustacea_copepod_monstrilloidae,Zoo_crustacea_copepod_monstrilloidae,,,Y,,,,,copepod
+nice-nephrop,copepod_nauplii,2189,copepoda_nauplii,305,Zoo_crustacea_copepod-nauplius,Zoo_crustacea_copepod,,,Y,,,,,copepod
+Dutch dataset,NA,0,cumacea,8,Zoo_crustacea_cumacea,Zoo_crustacea_cumacea,,,Y,,,,,non_copepod
+nice-nephrop,decapoda,3,,,Zoo_crustacea_decapoda,Zoo_crustacea_decapoda,,,Y,,,,decapods are all the crabs and lobsters so I doubt you will find any adult. They usually come as brachyura,non_copepod
+nice-nephrop,decapoda-larvae_brachyura,5,crutacea_zoea_crab,368,Zoo_crustacea_decapoda_brachyura,Zoo_crustacea_decapoda_brachyura,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,crustacea_zoea_shrimp,66,Zoo_crustacea_decapoda_caridea,Zoo_crustacea_decapoda_caridea,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,crustacea_crangon,3,Zoo_crustacea_decapoda_crangon,Zoo_crustacea_decapoda_crangon,,N,Y,,"[LvW]merge  with ""Zoo_crustacea_decapoda_caridea""",,,non_copepod
+nice-nephrop,mysideacea,1,crustacea_mysida,22,Zoo_crustacea_mysidacea,Zoo_crustacea_mysidacea,,Y,Y,,image in CEFAS trainingset does not look like a mysid,,,non_copepod
+nice-nephrop,echinodermata-juvenille,1,,,Zoo_echinodermata,Zoo_echinodermata,,N,,,[LvW]this one image is actually a copepod. Delete class?,,,non_copepod
+nice-nephrop,echniodermata-larvae,2,,,Zoo_echinodermata,Zoo_echinodermata,,Y,,,,,,non_copepod
+Dutch dataset,NA,0,echinoderm_bipinnaria,40,Zoo_echinodermata_asteroidea-bipinnaria,Zoo_echinodermata_asteroidea,,Y,,,,,,non_copepod
+Dutch dataset,NA,0,echinoderm_branchiolaria,332,Zoo_echinodermata_asteroidea-branchiolaria,Zoo_echinodermata_asteroidea,,Y,,,,,,non_copepod
+Dutch dataset,NA,0,echinoderm_echinopluteus_type_1,1015,Zoo_echinodermata_irregularia-echinopluteus,Zoo_echinodermata_irregularia,,Y,,,,,,non_copepod
+Dutch dataset,NA,0,echinoderm_echinopluteus_type_2,84,Zoo_echinodermata_carinacea-echinopluteus,Zoo_echinodermata_carinacea,,Y,,,,,,non_copepod
+Dutch dataset,NA,0,echinoderm_ophiopluteus,341,Zoo_echinodermata_ophiuroidea-ophiopluteus,Zoo_echinodermata_ophiuroidea,,Y,,,,,,non_copepod
+Dutch dataset,NA,0,echinoderm_stars_asteridae,56,Zoo_echinodermata_asteroidea,Zoo_echinodermata_asteroidea,,Y,,,,,,non_copepod
+Dutch dataset,NA,0,echinoderms_stars_ophio,21,Zoo_echinodermata_ophiuroidea,Zoo_echinodermata_ophiuroidea,,Y,,,,,,non_copepod
+nice-nephrop,euphausiid_nauplii,3,,,Zoo_crustacea_euphausiidae-nauplius,Zoo_crustacea_euphausiidae_nauplius,,,Y,,"[LvW]when we have some more images of Euphausiiids might be good to look into the names of the juvenile stages. According to Castellani & Edwards 2017 there are three differently named stages, nauplius, calyptopis and furcilia. ",,,non_copepod
+Dutch dataset,NA,0,ctenophora,40,Zoo_ctenophora,Zoo_ctenophora,,,Y,,,,,non_copepod
+nice-nephrop,fish-larvae,1,fish_larvae,30,Fish_larva,Fish_larva,,,Y,,this image in the CEFAS trainingset looks like an appendicularian tail not a fish larvae,,,non_copepod
+nice-nephrop,fish-larvae_clupeidae,2,,,Fish_larva_clupeidae,Fish_larva_clupeidae,,,Y,,these images in the CEFAS trainingset look like chaetognaths not fish larvae,,,non_copepod
+Dutch dataset,NA,0,fish eggs,24,Fish_egg,Fish_egg,,,Y,,,,,non_copepod
+nice-nephrop,invertabrate_eggs,3,,,Zoo_invertrebrate eggs,Zoo_invertrebrate eggs,,,Y,,,,,non_copepod
+nice-nephrop,bivalvia_larvae,1,,,Zoo_mollusca_bivalvia,Zoo_mollusca_bivalvia,,,Y,,,,,non_copepod
+nice-nephrop,gastropoda,7,,,Zoo_mollusca_gastropoda,Zoo_mollusca_gastropoda,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,mollusca,23,Zoo_mollusca,Zoo_mollusca,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,platyhelminthes_microstomum,238,Zoo_platylminthes_microstomum,Zoo_platylminthes_microstomum,,,Y,,,,,non_copepod
+Dutch dataset,NA,0,phoronida,5,Zoo_phoronida,Zoo_phoronida,,,Y,,,,,non_copepod
+nice-nephrop,radiolaria,3,,,Zoo_radiolaria,Zoo_radiolaria,,,Y,,,,,non_copepod
+nice-nephrop,tintinnida,906,,,Zoo_tintinnidae,Zoo_tintinnidae,,,Y,,,,,non_copepod
+nice-nephrop,animalia,27,,,Zoo_unknown,Zoo_other,,,Y,,,,,non_copepod
+DETRITUS,,,,,,,,,,,,,,non_copepod
+nice-nephrop,nt-bubbles,8,bubbles,70,Bub_nt,Bub_nt,,,,,"[LvW] I wouldn't group bubbles under detritus, same as artefacts from dust on the flow cell etc. Detritus = organic particles",,,detritus
+nice-nephrop,copepod_bits,8,Check imges,,,,,,,,,,,detritus
+nice-nephrop,nt-phyto_rhizosolenia-spp,27,Check imges,,,,,,,,,,,detritus
+nice-nephrop,nt_phyto,14,Check imges,,,,,,,,,,,detritus
+nice-nephrop,nt_phyto_chains,37,Check imges,,,,,,,,,,,detritus
+nice-nephrop,nt-phyto_ceratium-spp,589,Check imges,,,,,,,,,,,detritus
+Dutch dataset,NA,0,balanoid_exuvium,1,Detr_crustacea-exuvium,Detr_crustacea,,,,,I think exuvium is remain of body…. I think this should be part of detritus? [LvW] probably best to delete this class and create separate Zoo_crustacea_exuvium class for all crustacean moult fragments?,,,detritus
+Dutch dataset,NA,0,copepoda_exuvium,205,Detr_crustacea-exuvium,Detr_crustacea,,,,,,,,detritus
+Dutch dataset,NA,0,polychaete_empty_tube,18,Detr_annelida_polychaeta_Terebellidae-emptytube,Detr_annelida_polychaeta_Terebellidae,,,,,,,,detritus
+Dutch dataset,,,detritus,2845,Detr,Detr,,,,,[LvW]added our detritus class. No CEFAS detritus in google drive?,,,detritus

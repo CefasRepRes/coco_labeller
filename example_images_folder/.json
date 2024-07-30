@@ -7,15 +7,13 @@
     },
     "images": [
         {
-            "file_name": "pia1.2023-08-15.0706+N00007553.tif",
-            "folder_name": "cnidaria",
             "location": "",
             "latitude": "54.833776666666665",
             "longitude": "1.052965",
             "datetime": "2023:08:15 07:07:01",
             "species": "",
             "genus": "",
-            "aphiaID": "",
+            "aphiaID": "115088.0",
             "life stage or biotype": "",
             "shape": "",
             "partial": "",
@@ -24,11 +22,71 @@
             "uncertain about class": "",
             "predicted_label": "non_copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00007553.tif",
+            "folder_name": "cnidaria"
         },
         {
-            "file_name": "pia1.2023-08-15.0706+N00042499.tif",
-            "folder_name": "copepod_bits",
+            "location": "",
+            "latitude": "54.83376666666667",
+            "longitude": "1.0523266666666666",
+            "datetime": "2023:08:15 07:07:13",
+            "species": "",
+            "genus": "",
+            "aphiaID": "115088.0",
+            "life stage or biotype": "",
+            "shape": "",
+            "partial": "",
+            "what the partial part is": "",
+            "person classifying": "",
+            "uncertain about class": "",
+            "predicted_label": "non_copepod",
+            "annotations": "",
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00007833.tif",
+            "folder_name": "cnidaria"
+        },
+        {
+            "location": "",
+            "latitude": "54.833765",
+            "longitude": "1.0500716666666667",
+            "datetime": "2023:08:15 07:07:53",
+            "species": "",
+            "genus": "",
+            "aphiaID": "115088.0",
+            "life stage or biotype": "",
+            "shape": "",
+            "partial": "",
+            "what the partial part is": "",
+            "person classifying": "",
+            "uncertain about class": "",
+            "predicted_label": "non_copepod",
+            "annotations": "",
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00009291.tif",
+            "folder_name": "cnidaria"
+        },
+        {
+            "location": "",
+            "latitude": "54.83365",
+            "longitude": "1.0355033333333332",
+            "datetime": "2023:08:15 07:12:01",
+            "species": "",
+            "genus": "",
+            "aphiaID": "115088.0",
+            "life stage or biotype": "",
+            "shape": "",
+            "partial": "",
+            "what the partial part is": "",
+            "person classifying": "",
+            "uncertain about class": "",
+            "predicted_label": "non_copepod",
+            "annotations": "",
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0710+N00028153.tif",
+            "folder_name": "cnidaria"
+        },
+        {
             "location": "",
             "latitude": "54.833711666666666",
             "longitude": "1.0438266666666667",
@@ -44,11 +102,31 @@
             "uncertain about class": "",
             "predicted_label": "copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00042499.tif",
+            "folder_name": "copepod_bits"
         },
         {
-            "file_name": "pia1.2023-08-15.0730+N00018276.tif",
-            "folder_name": "copepod_bits",
+            "location": "",
+            "latitude": "54.83465666666667",
+            "longitude": "0.9210283333333333",
+            "datetime": "2023:08:15 07:38:48",
+            "species": "",
+            "genus": "",
+            "aphiaID": "115088.0",
+            "life stage or biotype": "",
+            "shape": "",
+            "partial": "",
+            "what the partial part is": "",
+            "person classifying": "",
+            "uncertain about class": "",
+            "predicted_label": "non_copepod",
+            "annotations": "",
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0730+N00016318.tif",
+            "folder_name": "copepod_bits"
+        },
+        {
             "location": "",
             "latitude": "54.83471333333333",
             "longitude": "0.9160566666666666",
@@ -64,11 +142,11 @@
             "uncertain about class": "",
             "predicted_label": "copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0730+N00018276.tif",
+            "folder_name": "copepod_bits"
         },
         {
-            "file_name": "pia1.2023-08-15.0706+N00007438.tif",
-            "folder_name": "copepod_calanoida",
             "location": "",
             "latitude": "54.833785",
             "longitude": "1.05322",
@@ -84,11 +162,11 @@
             "uncertain about class": "",
             "predicted_label": "copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00007438.tif",
+            "folder_name": "copepod_calanoida"
         },
         {
-            "file_name": "pia1.2023-08-15.0706+N00007450.tif",
-            "folder_name": "copepod_calanoida",
             "location": "",
             "latitude": "54.83378166666667",
             "longitude": "1.053165",
@@ -104,11 +182,11 @@
             "uncertain about class": "",
             "predicted_label": "copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00007450.tif",
+            "folder_name": "copepod_calanoida"
         },
         {
-            "file_name": "pia1.2023-08-15.0706+N00008873.tif",
-            "folder_name": "copepod_calanoida",
             "location": "",
             "latitude": "54.83376666666667",
             "longitude": "1.0509883333333334",
@@ -124,11 +202,11 @@
             "uncertain about class": "",
             "predicted_label": "copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00008873.tif",
+            "folder_name": "copepod_calanoida"
         },
         {
-            "file_name": "pia1.2023-08-15.0706+N00009303.tif",
-            "folder_name": "copepod_calanoida",
             "location": "",
             "latitude": "54.833765",
             "longitude": "1.0500233333333333",
@@ -144,11 +222,11 @@
             "uncertain about class": "",
             "predicted_label": "copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00009303.tif",
+            "folder_name": "copepod_calanoida"
         },
         {
-            "file_name": "pia1.2023-08-15.0706+N00009534.tif",
-            "folder_name": "copepod_calanoida",
             "location": "",
             "latitude": "54.833753333333334",
             "longitude": "1.0495616666666667",
@@ -164,7 +242,9 @@
             "uncertain about class": "",
             "predicted_label": "copepod",
             "annotations": "",
-            "categories": ""
+            "categories": "",
+            "file_name": "pia1.2023-08-15.0706+N00009534.tif",
+            "folder_name": "copepod_calanoida"
         }
     ],
     "image_fields": {

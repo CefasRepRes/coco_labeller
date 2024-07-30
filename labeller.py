@@ -6,10 +6,20 @@ from PIL import Image, ImageTk
 import torch
 from utils import resnet18, get_device, classify, extract_gps, save_to_files, load_images_from_directory, load_model, bind_keys, setup_ui
 import time
+import pandas as pd
 
+def load_aphia_data(csv_path):
+    df = pd.read_csv(csv_path)
+    # Filter out rows with missing AphiaID
+    df = df.dropna(subset=['AphiaID'])
+    # Group by 'model_18_21May.pth' and 'class'
+    aphia_data = df.groupby('model_18_21May.pth')['AphiaID'].apply(list).to_dict()
+    return aphia_data
+    
 class COCOAnnotator(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.aphia_data = load_aphia_data('current_trainingsetclasses - Sheet1.csv')  # Adjust path if necessary
         self.title("COCO Metadata Annotator")
 
         self.output_name = ""
@@ -121,6 +131,8 @@ class COCOAnnotator(tk.Tk):
     def load_images(self):
         self.images = load_images_from_directory(self.image_directory)
 
+
+
     def display_current_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
@@ -145,14 +157,13 @@ class COCOAnnotator(tk.Tk):
                 tk.Label(self.fields_frame, text=f"{field}:").grid(row=i+1, column=0)
                 
                 if field == "aphiaID":
-                    # Create drop-down list for aphiaID
                     tk.Label(self.fields_frame, text="Select or Enter aphiaID:").grid(row=i+1, column=0)
                     
                     # OptionMenu for predefined aphiaID options
                     self.aphiaID_var = tk.StringVar(self)
-                    self.aphiaID_var.set(self.aphiaID_options[0])  # Set default value
-                    aphiaID_menu = tk.OptionMenu(self.fields_frame, self.aphiaID_var, *self.aphiaID_options)
-                    aphiaID_menu.grid(row=i+1, column=1)
+                    self.aphiaID_var.set("")  # Set default value
+                    self.aphiaID_menu = tk.OptionMenu(self.fields_frame, self.aphiaID_var, *self.aphiaID_options)
+                    self.aphiaID_menu.grid(row=i+1, column=1)
                     
                     # Text entry for user-defined aphiaID
                     self.custom_aphiaID_entry = tk.Entry(self.fields_frame)
@@ -190,10 +201,26 @@ class COCOAnnotator(tk.Tk):
                 if not (min_score <= scores.max().item() <= max_score) or label not in self.selected_classes:
                     self.save_fields_and_next_image()
                     return
+
+                # Update AphiaID dropdown based on predicted label
+                if label in self.aphia_data:
+                    self.update_aphiaID_options(self.aphia_data[label])
+                else:
+                    self.update_aphiaID_options([])  # Clear options if no data
+
             else:
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
         else:
             print("No images found to display")
+
+    def update_aphiaID_options(self, aphiaID_list):
+        menu = self.aphiaID_menu["menu"]
+        menu.delete(0, "end")
+        for aphiaID in aphiaID_list:
+            menu.add_command(label=aphiaID, command=tk._setit(self.aphiaID_var, aphiaID))
+        self.aphiaID_var.set(aphiaID_list[0] if aphiaID_list else "")
+        
+        
 
     def save_fields_and_next_image(self):
         if self.images:
@@ -212,23 +239,20 @@ class COCOAnnotator(tk.Tk):
                     self.display_current_image()
                 return
 
-            # Determine the aphiaID value
             selected_aphiaID = self.aphiaID_var.get()
             custom_aphiaID = self.custom_aphiaID_entry.get().strip()
             aphiaID = custom_aphiaID if custom_aphiaID else selected_aphiaID
 
-            # Extract field values, handle aphiaID specially
             image_data = {}
             for field in self.image_fields:
                 if field == "aphiaID":
                     image_data[field] = aphiaID
                 elif field in self.entries:
-                    if isinstance(self.entries[field], tuple):  # This is for the aphiaID case, should not occur here
-                        image_data[field] = self.entries[field][0].get()  # Get value from OptionMenu or Entry
+                    if isinstance(self.entries[field], tuple):
+                        image_data[field] = self.entries[field][0].get()
                     else:
                         image_data[field] = self.entries[field].get()
-            
-            # Ensure the predicted label is included
+
             predicted_label_entry = self.entries.get("predicted_label")
             image_data["predicted_label"] = predicted_label_entry.get() if predicted_label_entry else ""
 
@@ -248,6 +272,7 @@ class COCOAnnotator(tk.Tk):
             else:
                 messagebox.showinfo("Completed", "All images have been processed.")
                 save_to_files(self.data, self.labels_directory, self.output_name)
+
 
 
     def import_config(self):
