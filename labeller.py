@@ -7,37 +7,6 @@ import torch
 from utils import resnet18, get_device, classify, extract_gps, save_to_files, load_images_from_directory, load_model, bind_keys, setup_ui
 import time
 
-def load_model_dialog(app):
-    model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
-    if model_path:
-        app.model = load_model(model_path, app.LABELS, app.device)
-        if app.model:
-            messagebox.showinfo("Model Loaded", f"Model loaded successfully from {model_path}")
-            if not app.LABELS:
-                messagebox.showwarning("No Labels", "No labels available. Please upload labels JSON first.")
-                return
-
-            app.checkbox_window = tk.Toplevel(app)
-            app.checkbox_window.title("Select Classes and Scores")
-
-            # Create checkboxes for labels
-            for label in app.LABELS.values():
-                var = tk.BooleanVar(value=True)  # Set the default value to True
-                checkbox = tk.Checkbutton(app.checkbox_window, text=label, variable=var, command=lambda l=label: app.toggle_class(l))
-                checkbox.pack(anchor="w")
-                app.checkboxes[label] = var
-                app.selected_classes.add(label)  # Add all labels to selected_classes by default
-
-            # Create score filters in checkbox_window
-            tk.Label(app.checkbox_window, text="Min Prediction Score:").pack(anchor="w")
-            app.min_score_entry = tk.Entry(app.checkbox_window)
-            app.min_score_entry.pack(anchor="w")
-            app.min_score_entry.insert(0, "0.0")
-
-            tk.Label(app.checkbox_window, text="Max Prediction Score:").pack(anchor="w")
-            app.max_score_entry = tk.Entry(app.checkbox_window)
-            app.max_score_entry.pack(anchor="w")
-            app.max_score_entry.insert(0, "1.0")
 class COCOAnnotator(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -278,7 +247,7 @@ class COCOAnnotator(tk.Tk):
                         self.LABELS = {int(num): name for num, name in labels_dict.items()}
                         messagebox.showinfo("Labels Loaded", f"Labels loaded successfully from {json_path}")
                         if self.model:
-                            load_model_dialog(self)
+                            self.load_model_dialog()
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load labels: {e}")
 
@@ -287,7 +256,35 @@ class COCOAnnotator(tk.Tk):
     def load_model(self, model_path):
         model = load_model(model_path, self.LABELS, self.device)
 
+    def load_model_dialog(self):
+        model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
+        if model_path:
+            self.model = self.load_model(model_path)
+            if self.model:
+                messagebox.showinfo("Model Loaded", f"Model loaded successfully from {model_path}")
+                if not self.LABELS:
+                    messagebox.showwarning("No Labels", "No labels available. Please upload labels JSON first.")
+                    return
+                self.checkbox_window = tk.Toplevel(self)
+                self.checkbox_window.title("Select Classes and Scores")
 
+                for label in self.LABELS.values():
+                    var = tk.BooleanVar(value=True)  # Set the default value to True
+                    checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
+                    checkbox.pack(anchor="w")
+                    self.checkboxes[label] = var
+                    self.selected_classes.add(label)  # Add all labels to selected_classes by default
+
+                # Create score filters in checkbox_window
+                tk.Label(self.checkbox_window, text="Min Prediction Score:").pack(anchor="w")
+                self.min_score_entry = tk.Entry(self.checkbox_window)
+                self.min_score_entry.pack(anchor="w")
+                self.min_score_entry.insert(0, "0.0")
+
+                tk.Label(self.checkbox_window, text="Max Prediction Score:").pack(anchor="w")
+                self.max_score_entry = tk.Entry(self.checkbox_window)
+                self.max_score_entry.pack(anchor="w")
+                self.max_score_entry.insert(0, "1.0")
 
     def toggle_class(self, label):
         if self.checkboxes[label].get():
