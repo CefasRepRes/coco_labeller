@@ -5,6 +5,7 @@ import json
 from PIL import Image, ImageTk
 import torch
 from utils import resnet18, get_device, classify, extract_gps, save_to_files
+import time
 
 class COCOAnnotator(tk.Tk):
     def __init__(self):
@@ -208,20 +209,20 @@ class COCOAnnotator(tk.Tk):
                 self.predicted_label_entry.insert(0, label)
                 self.entries["predicted_label"] = self.predicted_label_entry
 
-                # Check score range using checkbox_window entries
                 min_score = float(self.min_score_entry.get())
                 max_score = float(self.max_score_entry.get())
-                if not (min_score <= scores.max().item() <= max_score):
-                    self.save_fields_and_next_image()
-                    return
+                
+                self.update_idletasks()
+                time.sleep(0.01)
 
-                if label not in self.selected_classes:
+                if not (min_score <= scores.max().item() <= max_score) or label not in self.selected_classes:
                     self.save_fields_and_next_image()
                     return
             else:
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
         else:
             print("No images found to display")
+
 
 
     def save_fields_and_next_image(self):
@@ -260,7 +261,6 @@ class COCOAnnotator(tk.Tk):
             else:
                 messagebox.showinfo("Completed", "All images have been processed.")
                 save_to_files(self.data, self.labels_directory, self.output_name)
-                self.quit()
 
     def import_config(self):
         config_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
