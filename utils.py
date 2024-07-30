@@ -65,15 +65,21 @@ def extract_gps(filename_or_bytes):
     return latitude, longitude, image_datetime
 
 def save_to_files(data, labels_directory, output_name):
-    json_path = os.path.join(labels_directory, f"{output_name}.json")
-    with open(json_path, 'w') as json_file:
-        json.dump(data, json_file, indent=4)
+    try:
+        json_path = os.path.join(labels_directory, f"{output_name}.json")
+        with open(json_path, 'w') as json_file:
+            json.dump(data, json_file, indent=4)
 
-    csv_path = os.path.join(labels_directory, f"{output_name}.csv")
-    with open(csv_path, 'w', newline='') as csv_file:
-        writer = csv.writer(csv_file)
-        headers = ["file_name", "folder_name"] + list(data['image_fields'].keys()) + ["predicted_label"]
-        writer.writerow(headers)
-        for image in data["images"]:
-            row = [image.get(header, "") for header in headers]
-            writer.writerow(row)
+        csv_path = os.path.join(labels_directory, f"{output_name}.csv")
+        with open(csv_path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+            headers = ["file_name", "folder_name"] + list(data['image_fields'].keys()) + ["predicted_label"]
+            writer.writerow(headers)
+            for image in data["images"]:
+                row = [image.get(header, "") for header in headers]
+                writer.writerow(row)
+        return True
+    except Exception as e:
+        print(f"Failed to save files: {e}")
+        return False
+

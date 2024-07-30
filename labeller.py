@@ -346,11 +346,15 @@ class COCOAnnotator(tk.Tk):
 
     def save_data(self, event=None):
         if not self.output_name:
-            messagebox.showwarning("No Output Name", "Please provide an output name.")
+            messagebox.showwarning("No Output Name", "You are not saving your labels. Please provide a valid save directory.")
             return
 
+        success = save_to_files(self.data, self.labels_directory, self.output_name)
+        
+        if not success:
+            messagebox.showerror("Save Failed", "Failed to save the file. Please check the save path and ensure the file is not already open.")
+
         save_to_files(self.data, self.labels_directory, self.output_name)
-        messagebox.showinfo("Data Saved", "Data has been saved successfully.")
 
 if __name__ == "__main__":
     app = COCOAnnotator()
