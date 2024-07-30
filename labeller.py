@@ -7,6 +7,25 @@ import torch
 from utils import resnet18, get_device, classify, extract_gps, save_to_files
 import time
 
+
+def load_images_from_directory(image_directory):
+    valid_extensions = (
+        '.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP', '.gif', '.GIF',
+        '.tiff', '.TIFF', '.tif', '.TIF', '.ico', '.ICO', '.webp', '.WEBP', '.svg', '.SVG',
+        '.heic', '.HEIC', '.heif', '.HEIF', '.jfif', '.JFIF', '.pjpeg', '.PJPEG', '.pjp', '.PJP', '.avif', '.AVIF'
+    )
+    
+    images = []
+    for dp, dn, filenames in os.walk(image_directory):
+        for f in filenames:
+            file_path = os.path.join(dp, f)
+            if f.lower().endswith(valid_extensions):
+                images.append(file_path)
+    
+    return images
+
+
+
 class COCOAnnotator(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -159,13 +178,13 @@ class COCOAnnotator(tk.Tk):
             self.display_current_image()
 
     def load_images(self):
-        self.images = []
-        valid_extensions = ('.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP', '.gif', '.GIF', '.tiff', '.TIFF', '.tif', '.TIF', '.ico', '.ICO', '.webp', '.WEBP', '.svg', '.SVG', '.heic', '.HEIC', '.heif', '.HEIF', '.jfif', '.JFIF', '.pjpeg', '.PJPEG', '.pjp', '.PJP', '.avif', '.AVIF')
-        for dp, dn, filenames in os.walk(self.image_directory):
-            for f in filenames:
-                file_path = os.path.join(dp, f)
-                if f.lower().endswith(valid_extensions):
-                    self.images.append(file_path)
+        self.images = load_images_from_directory(self.image_directory)
+#        valid_extensions = ('.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP', '.gif', '.GIF', '.tiff', '.TIFF', '.tif', '.TIF', '.ico', '.ICO', '.webp', '.WEBP', '.svg', '.SVG', '.heic', '.HEIC', '.heif', '.HEIF', '.jfif', '.JFIF', '.pjpeg', '.PJPEG', '.pjp', '.PJP', '.avif', '.AVIF')
+#        for dp, dn, filenames in os.walk(self.image_directory):
+#            for f in filenames:
+#                file_path = os.path.join(dp, f)
+#                if f.lower().endswith(valid_extensions):
+#                    self.images.append(file_path)
 
     def display_current_image(self):
         if self.images:
