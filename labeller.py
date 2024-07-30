@@ -25,6 +25,9 @@ class COCOAnnotator(tk.Tk):
             "class options considered": ""
         }
 
+        # Define default aphiaID options
+        self.aphiaID_options = ["123456", "789101", "112131", "415161", "718192"]
+
         self.image_fields = {
             "location": "",
             "latitude": "",
@@ -92,7 +95,6 @@ class COCOAnnotator(tk.Tk):
         self.load_images()
         self.display_current_image()
 
-
     def focus_nth_entry(self, event):
         try:
             n = int(event.char)
@@ -141,17 +143,35 @@ class COCOAnnotator(tk.Tk):
             self.entries = {}
             for i, (field, default_value) in enumerate(self.image_fields.items()):
                 tk.Label(self.fields_frame, text=f"{field}:").grid(row=i+1, column=0)
-                entry = tk.Entry(self.fields_frame)
-                entry.grid(row=i+1, column=1)
-                if field == "latitude":
-                    entry.insert(0, latitude if latitude != 'error' else "")
-                elif field == "longitude":
-                    entry.insert(0, longitude if longitude != 'error' else "")
-                elif field == "datetime":
-                    entry.insert(0, image_datetime if image_datetime != 'error' else "")
+                
+                if field == "aphiaID":
+                    # Create drop-down list for aphiaID
+                    tk.Label(self.fields_frame, text="Select or Enter aphiaID:").grid(row=i+1, column=0)
+                    
+                    # OptionMenu for predefined aphiaID options
+                    self.aphiaID_var = tk.StringVar(self)
+                    self.aphiaID_var.set(self.aphiaID_options[0])  # Set default value
+                    aphiaID_menu = tk.OptionMenu(self.fields_frame, self.aphiaID_var, *self.aphiaID_options)
+                    aphiaID_menu.grid(row=i+1, column=1)
+                    
+                    # Text entry for user-defined aphiaID
+                    self.custom_aphiaID_entry = tk.Entry(self.fields_frame)
+                    self.custom_aphiaID_entry.grid(row=i+1, column=2)
+                    self.custom_aphiaID_entry.insert(0, "")
+                    
+                    self.entries[field] = (self.aphiaID_var, self.custom_aphiaID_entry)
                 else:
-                    entry.insert(0, default_value)
-                self.entries[field] = entry
+                    entry = tk.Entry(self.fields_frame)
+                    entry.grid(row=i+1, column=1)
+                    if field == "latitude":
+                        entry.insert(0, latitude if latitude != 'error' else "")
+                    elif field == "longitude":
+                        entry.insert(0, longitude if longitude != 'error' else "")
+                    elif field == "datetime":
+                        entry.insert(0, image_datetime if image_datetime != 'error' else "")
+                    else:
+                        entry.insert(0, default_value)
+                    self.entries[field] = entry
 
             if self.model:
                 label, scores = classify(image_path, self.device, self.model, self.LABELS)
@@ -175,15 +195,13 @@ class COCOAnnotator(tk.Tk):
         else:
             print("No images found to display")
 
-
-
     def save_fields_and_next_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
             if not self.model:
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
                 return
-            
+
             label, scores = classify(image_path, self.device, self.model, self.LABELS)
             min_score = float(self.min_score_entry.get())
             max_score = float(self.max_score_entry.get())
@@ -194,12 +212,29 @@ class COCOAnnotator(tk.Tk):
                     self.display_current_image()
                 return
 
-            image_data = {
-                "file_name": os.path.basename(image_path),
-                "folder_name": self.folder_name_entry.get(),
-                **{field: self.entries[field].get() for field in self.image_fields},
-                "predicted_label": self.entries.get("predicted_label", "").get()
-            }
+            # Determine the aphiaID value
+            selected_aphiaID = self.aphiaID_var.get()
+            custom_aphiaID = self.custom_aphiaID_entry.get().strip()
+            aphiaID = custom_aphiaID if custom_aphiaID else selected_aphiaID
+
+            # Extract field values, handle aphiaID specially
+            image_data = {}
+            for field in self.image_fields:
+                if field == "aphiaID":
+                    image_data[field] = aphiaID
+                elif field in self.entries:
+                    if isinstance(self.entries[field], tuple):  # This is for the aphiaID case, should not occur here
+                        image_data[field] = self.entries[field][0].get()  # Get value from OptionMenu or Entry
+                    else:
+                        image_data[field] = self.entries[field].get()
+            
+            # Ensure the predicted label is included
+            predicted_label_entry = self.entries.get("predicted_label")
+            image_data["predicted_label"] = predicted_label_entry.get() if predicted_label_entry else ""
+
+            image_data["file_name"] = os.path.basename(image_path)
+            image_data["folder_name"] = self.folder_name_entry.get()
+
             self.data["images"].append(image_data)
 
             self.labeled_images_count += 1
@@ -213,6 +248,7 @@ class COCOAnnotator(tk.Tk):
             else:
                 messagebox.showinfo("Completed", "All images have been processed.")
                 save_to_files(self.data, self.labels_directory, self.output_name)
+
 
     def import_config(self):
         config_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
@@ -250,8 +286,6 @@ class COCOAnnotator(tk.Tk):
                             self.load_model_dialog()
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load labels: {e}")
-
-
 
     def load_model(self, model_path):
         model = load_model(model_path, self.LABELS, self.device)
