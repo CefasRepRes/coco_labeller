@@ -4,27 +4,8 @@ import os
 import json
 from PIL import Image, ImageTk
 import torch
-from utils import resnet18, get_device, classify, extract_gps, save_to_files
+from utils import resnet18, get_device, classify, extract_gps, save_to_files, load_images_from_directory, load_model, bind_keys, setup_ui
 import time
-
-
-def load_images_from_directory(image_directory):
-    valid_extensions = (
-        '.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP', '.gif', '.GIF',
-        '.tiff', '.TIFF', '.tif', '.TIF', '.ico', '.ICO', '.webp', '.WEBP', '.svg', '.SVG',
-        '.heic', '.HEIC', '.heif', '.HEIF', '.jfif', '.JFIF', '.pjpeg', '.PJPEG', '.pjp', '.PJP', '.avif', '.AVIF'
-    )
-    
-    images = []
-    for dp, dn, filenames in os.walk(image_directory):
-        for f in filenames:
-            file_path = os.path.join(dp, f)
-            if f.lower().endswith(valid_extensions):
-                images.append(file_path)
-    
-    return images
-
-
 
 class COCOAnnotator(tk.Tk):
     def __init__(self):
@@ -67,8 +48,8 @@ class COCOAnnotator(tk.Tk):
         self.checkboxes = {}
         self.selected_classes = set()
 
-        self.setup_ui()
-        self.bind_keys()
+        setup_ui(self)
+        bind_keys(self)
 
         self.device = get_device()
 
@@ -111,48 +92,6 @@ class COCOAnnotator(tk.Tk):
         self.load_images()
         self.display_current_image()
 
-    def setup_ui(self):
-        self.upload_labels_button = tk.Button(self, text="1: Provide model labels (.json file)", command=self.upload_labels_json)
-        self.upload_labels_button.grid(row=0, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.load_model_button = tk.Button(self, text="2: Provide model (.pth file)", command=self.load_model_dialog)
-        self.load_model_button.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.select_labels_dir_button = tk.Button(self, text="3: Provide directory for labels (my/saved/outputs/dir)", command=self.select_labels_directory)
-        self.select_labels_dir_button.grid(row=2, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.select_dir_button = tk.Button(self, text="4: Provide directory for images (my/input/images/library)", command=self.select_image_directory)
-        self.select_dir_button.grid(row=3, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.import_config_button = tk.Button(self, text="Optional: Import custom labelling standard", command=self.import_config)
-        self.import_config_button.grid(row=4, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.process_all_button = tk.Button(self, text="Optional: Process All", command=self.process_all_images)
-        self.process_all_button.grid(row=5, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.main_frame = tk.Frame(self)
-        self.main_frame.grid(row=6, column=0, columnspan=2, sticky="nsew")
-
-        self.canvas = tk.Canvas(self.main_frame, width=500, height=500)
-        self.canvas.grid(row=0, column=0, padx=5, pady=5)
-
-        self.fields_frame = tk.Frame(self.main_frame)
-        self.fields_frame.grid(row=0, column=1, padx=5, pady=5, sticky="ns")
-
-        self.next_button = tk.Button(self, text="Next Image", command=self.save_fields_and_next_image)
-        self.next_button.grid(row=7, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.data = {
-            "info": self.common_fields,
-            "images": [],
-            "image_fields": self.image_fields
-        }
-
-    def bind_keys(self):
-        for i in range(1, 10):
-            self.bind(f"<Alt-Key-{i}>", self.focus_nth_entry)
-        self.bind("<Control-n>", lambda event: self.save_fields_and_next_image())
-        self.bind("<Control-s>", self.save_data)  # Bind Ctrl + S to save function
 
     def focus_nth_entry(self, event):
         try:
@@ -179,12 +118,6 @@ class COCOAnnotator(tk.Tk):
 
     def load_images(self):
         self.images = load_images_from_directory(self.image_directory)
-#        valid_extensions = ('.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP', '.gif', '.GIF', '.tiff', '.TIFF', '.tif', '.TIF', '.ico', '.ICO', '.webp', '.WEBP', '.svg', '.SVG', '.heic', '.HEIC', '.heif', '.HEIF', '.jfif', '.JFIF', '.pjpeg', '.PJPEG', '.pjp', '.PJP', '.avif', '.AVIF')
-#        for dp, dn, filenames in os.walk(self.image_directory):
-#            for f in filenames:
-#                file_path = os.path.join(dp, f)
-#                if f.lower().endswith(valid_extensions):
-#                    self.images.append(file_path)
 
     def display_current_image(self):
         if self.images:
@@ -318,14 +251,10 @@ class COCOAnnotator(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load labels: {e}")
 
+
+
     def load_model(self, model_path):
-        try:
-            model = resnet18(num_classes=len(self.LABELS)).to(self.device)
-            model.load_state_dict(torch.load(model_path, map_location=self.device))
-            return model
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load model: {e}")
-            return None
+        model = load_model(model_path, self.LABELS, self.device)
 
     def load_model_dialog(self):
         model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
