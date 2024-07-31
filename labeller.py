@@ -35,8 +35,7 @@ class COCOAnnotator(tk.Tk):
             "class options considered": ""
         }
 
-        # Define default aphiaID options
-        self.aphiaID_options = ["123456", "789101", "112131", "415161", "718192"]
+        self.aphiaID_options = [""]
 
         self.image_fields = {
             "location": "",
@@ -131,8 +130,6 @@ class COCOAnnotator(tk.Tk):
     def load_images(self):
         self.images = load_images_from_directory(self.image_directory)
 
-
-
     def display_current_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
@@ -162,12 +159,14 @@ class COCOAnnotator(tk.Tk):
                     # OptionMenu for predefined aphiaID options
                     self.aphiaID_var = tk.StringVar(self)
                     self.aphiaID_var.set("")  # Set default value
+                    
+                    # Ensure the OptionMenu is updated with the initial (empty) list
                     self.aphiaID_menu = tk.OptionMenu(self.fields_frame, self.aphiaID_var, *self.aphiaID_options)
-                    self.aphiaID_menu.grid(row=i+1, column=1)
+                    self.aphiaID_menu.grid(row=i+1, column=2)
                     
                     # Text entry for user-defined aphiaID
                     self.custom_aphiaID_entry = tk.Entry(self.fields_frame)
-                    self.custom_aphiaID_entry.grid(row=i+1, column=2)
+                    self.custom_aphiaID_entry.grid(row=i+1, column=1)
                     self.custom_aphiaID_entry.insert(0, "")
                     
                     self.entries[field] = (self.aphiaID_var, self.custom_aphiaID_entry)
@@ -207,7 +206,6 @@ class COCOAnnotator(tk.Tk):
                     self.update_aphiaID_options(self.aphia_data[label])
                 else:
                     self.update_aphiaID_options([])  # Clear options if no data
-
             else:
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
         else:
@@ -216,11 +214,16 @@ class COCOAnnotator(tk.Tk):
     def update_aphiaID_options(self, aphiaID_list):
         menu = self.aphiaID_menu["menu"]
         menu.delete(0, "end")
+        
+        # Add a blank option as the default
+        menu.add_command(label="", command=tk._setit(self.aphiaID_var, ""))
+        
         for aphiaID in aphiaID_list:
             menu.add_command(label=aphiaID, command=tk._setit(self.aphiaID_var, aphiaID))
-        self.aphiaID_var.set(aphiaID_list[0] if aphiaID_list else "")
         
-        
+        # Optionally set the default value
+        self.aphiaID_var.set("")  # Ensure the default is empty
+
 
     def save_fields_and_next_image(self):
         if self.images:
