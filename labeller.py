@@ -212,16 +212,16 @@ class COCOAnnotator(tk.Tk):
             print("No images found to display")
 
     def update_aphiaID_options(self, aphiaID_list):
+        unique_aphiaIDs = sorted(set(aphiaID_list))  # Optional: sort to maintain a consistent order
+        
         menu = self.aphiaID_menu["menu"]
         menu.delete(0, "end")
         
-        # Add a blank option as the default
         menu.add_command(label="", command=tk._setit(self.aphiaID_var, ""))
         
-        for aphiaID in aphiaID_list:
+        for aphiaID in unique_aphiaIDs:
             menu.add_command(label=aphiaID, command=tk._setit(self.aphiaID_var, aphiaID))
         
-        # Optionally set the default value
         self.aphiaID_var.set("")  # Ensure the default is empty
 
 
