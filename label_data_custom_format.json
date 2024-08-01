@@ -1,10 +1,4 @@
 {
-    "common_fields": {
-        "survey ID": "",
-        "survey region": "",
-        "instrument": "PI10",
-        "class options considered": ""
-    },
     "image_fields": {
         "file location": "",
         "latitude": "",
@@ -15,7 +9,11 @@
         "family": "",
         "order": "",
         "sex": "",
+        "thing": "",
         "aphiaID": "",
-        "life stage or biotype": "larval"
+        "life stage or biotype": "",
+        "taxonomist": "fixed",
+        "institute": "fixed",
+        "survey": "fixed",
     }
 }

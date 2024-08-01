@@ -21,6 +21,7 @@ class COCOAnnotator(tk.Tk):
         super().__init__()
         self.aphia_data = load_aphia_data('current_trainingsetclasses - Sheet1.csv')  # Adjust path if necessary
         self.title("COCO Metadata Annotator")
+        self.fixed_values = {}
 
         self.output_name = ""
         self.current_image_index = 0
@@ -28,12 +29,6 @@ class COCOAnnotator(tk.Tk):
         self.model = None
         self.labeled_images_count = 0
 
-        self.common_fields = {
-            "survey ID": "",
-            "survey region": "",
-            "instrument": "PI10",
-            "class options considered": ""
-        }
 
         self.aphiaID_options = [""]
 
@@ -52,8 +47,9 @@ class COCOAnnotator(tk.Tk):
             "person classifying": "",
             "uncertain about class": "",
             "predicted_label": "",
-            "annotations": "",
-            "categories": ""
+            "taxonomist": "fixed",
+            "institute": "fixed",
+            "survey": "fixed"        
         }
 
         self.entries = {}
@@ -78,6 +74,7 @@ class COCOAnnotator(tk.Tk):
         print(self.model)
         self.checkbox_window = tk.Toplevel(self)
         self.checkbox_window.title("Select Classes and Scores")
+        self.checkbox_window.geometry("200x200")  # Set the size of the window
 
         # Create checkboxes for labels
         for label in self.LABELS.values():
@@ -130,6 +127,7 @@ class COCOAnnotator(tk.Tk):
     def load_images(self):
         self.images = load_images_from_directory(self.image_directory)
 
+
     def display_current_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
@@ -150,29 +148,29 @@ class COCOAnnotator(tk.Tk):
             self.folder_name_entry.insert(0, folder_name)
 
             self.entries = {}
-            for i, (field, default_value) in enumerate(self.image_fields.items()):
-                tk.Label(self.fields_frame, text=f"{field}:").grid(row=i+1, column=0)
+            self.checkboxes = {}  # Store references to the checkbuttons here
+            
+            row = 1
+            for field, default_value in self.image_fields.items():
+                tk.Label(self.fields_frame, text=f"{field}:").grid(row=row, column=0)
                 
                 if field == "aphiaID":
-                    tk.Label(self.fields_frame, text="Select or Enter aphiaID:").grid(row=i+1, column=0)
+                    tk.Label(self.fields_frame, text="Select or Enter aphiaID:").grid(row=row, column=0)
                     
-                    # OptionMenu for predefined aphiaID options
                     self.aphiaID_var = tk.StringVar(self)
                     self.aphiaID_var.set("")  # Set default value
                     
-                    # Ensure the OptionMenu is updated with the initial (empty) list
                     self.aphiaID_menu = tk.OptionMenu(self.fields_frame, self.aphiaID_var, *self.aphiaID_options)
-                    self.aphiaID_menu.grid(row=i+1, column=2)
+                    self.aphiaID_menu.grid(row=row, column=2)
                     
-                    # Text entry for user-defined aphiaID
                     self.custom_aphiaID_entry = tk.Entry(self.fields_frame)
-                    self.custom_aphiaID_entry.grid(row=i+1, column=1)
+                    self.custom_aphiaID_entry.grid(row=row, column=1)
                     self.custom_aphiaID_entry.insert(0, "")
                     
                     self.entries[field] = (self.aphiaID_var, self.custom_aphiaID_entry)
                 else:
                     entry = tk.Entry(self.fields_frame)
-                    entry.grid(row=i+1, column=1)
+                    entry.grid(row=row, column=1)
                     if field == "latitude":
                         entry.insert(0, latitude if latitude != 'error' else "")
                     elif field == "longitude":
@@ -180,14 +178,26 @@ class COCOAnnotator(tk.Tk):
                     elif field == "datetime":
                         entry.insert(0, image_datetime if image_datetime != 'error' else "")
                     else:
-                        entry.insert(0, default_value)
+                        if field in self.fixed_values:
+                            entry.insert(0, self.fixed_values[field])
+                        else:
+                            entry.insert(0, default_value)
                     self.entries[field] = entry
+                    
+                    if default_value == "fixed":
+                        checkbox_var = tk.BooleanVar()
+                        checkbox = tk.Checkbutton(self.fields_frame, variable=checkbox_var)
+                        checkbox.grid(row=row, column=2)
+                        checkbox_var.set(field in self.fixed_values)  # Set checkbox state
+                        self.checkboxes[field] = checkbox_var
+                    
+                row += 1
 
             if self.model:
                 label, scores = classify(image_path, self.device, self.model, self.LABELS)
-                tk.Label(self.fields_frame, text="Predicted Label:").grid(row=len(self.image_fields) + 1, column=0)
+                tk.Label(self.fields_frame, text="Predicted Label:").grid(row=row, column=0)
                 self.predicted_label_entry = tk.Entry(self.fields_frame)
-                self.predicted_label_entry.grid(row=len(self.image_fields) + 1, column=1)
+                self.predicted_label_entry.grid(row=row, column=1)
                 self.predicted_label_entry.insert(0, label)
                 self.entries["predicted_label"] = self.predicted_label_entry
 
@@ -201,7 +211,6 @@ class COCOAnnotator(tk.Tk):
                     self.save_fields_and_next_image()
                     return
 
-                # Update AphiaID dropdown based on predicted label
                 if label in self.aphia_data:
                     self.update_aphiaID_options(self.aphia_data[label])
                 else:
@@ -210,6 +219,9 @@ class COCOAnnotator(tk.Tk):
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
         else:
             print("No images found to display")
+
+
+
 
     def update_aphiaID_options(self, aphiaID_list):
         unique_aphiaIDs = sorted(set(aphiaID_list))  # Optional: sort to maintain a consistent order
@@ -264,6 +276,11 @@ class COCOAnnotator(tk.Tk):
 
             self.data["images"].append(image_data)
 
+            # Save fixed values if their checkboxes are checked
+            for field, checkbox_var in self.checkboxes.items():
+                if checkbox_var.get():
+                    self.fixed_values[field] = self.entries[field].get()
+
             self.labeled_images_count += 1
 
             if self.labeled_images_count % 5 == 0:
@@ -283,7 +300,6 @@ class COCOAnnotator(tk.Tk):
         if config_path:
             with open(config_path, 'r') as config_file:
                 config = json.load(config_file)
-                self.common_fields = config.get("common_fields", self.common_fields)
                 self.image_fields = config.get("image_fields", self.image_fields)
                 messagebox.showinfo("Config Imported", f"Configuration imported from {config_path}")
                 if self.images:

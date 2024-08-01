@@ -132,7 +132,6 @@ def setup_ui(app):
     app.next_button.grid(row=7, column=0, columnspan=2, pady=5, sticky="ew")
 
     app.data = {
-        "info": app.common_fields,
         "images": [],
         "image_fields": app.image_fields
     }
