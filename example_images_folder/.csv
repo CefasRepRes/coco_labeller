@@ -1,2 +1,13 @@
 file_name,folder_name,location,latitude,longitude,datetime,species,genus,aphiaID,life stage or biotype,shape,partial,what the partial part is,person classifying,uncertain about class,predicted_label,annotations,categories,predicted_label
-pia1.2023-08-15.0706+N00007553.tif,cnidaria,,54.833776666666665,1.052965,2023:08:15 07:07:01,,,,,,,,,,,,,
+pia1.2023-08-15.0706+N00007553.tif,cnidaria,,54.833776666666665,1.052965,2023:08:15 07:07:01,,,,,,,,,,non_copepod,,,non_copepod
+pia1.2023-08-15.0706+N00007833.tif,cnidaria,,54.83376666666667,1.0523266666666666,2023:08:15 07:07:13,,,,,,,,,,non_copepod,,,non_copepod
+pia1.2023-08-15.0706+N00009291.tif,cnidaria,,54.833765,1.0500716666666667,2023:08:15 07:07:53,,,,,,,,,,non_copepod,,,non_copepod
+pia1.2023-08-15.0710+N00028153.tif,cnidaria,,54.83365,1.0355033333333332,2023:08:15 07:12:01,,,,,,,,,,non_copepod,,,non_copepod
+pia1.2023-08-15.0706+N00042499.tif,copepod_bits,,54.833711666666666,1.0438266666666667,2023:08:15 07:09:46,,,,,,,,,,copepod,,,copepod
+pia1.2023-08-15.0730+N00016318.tif,copepod_bits,,54.83465666666667,0.9210283333333333,2023:08:15 07:38:48,,,,,,,,,,non_copepod,,,non_copepod
+pia1.2023-08-15.0730+N00018276.tif,copepod_bits,,54.83471333333333,0.9160566666666666,2023:08:15 07:39:57,,,,,,,,,,copepod,,,copepod
+pia1.2023-08-15.0706+N00007438.tif,copepod_calanoida,,54.833785,1.05322,2023:08:15 07:06:56,,,,,,,,,,copepod,,,copepod
+pia1.2023-08-15.0706+N00007450.tif,copepod_calanoida,,54.83378166666667,1.053165,2023:08:15 07:06:57,,,,,,,,,,copepod,,,copepod
+pia1.2023-08-15.0706+N00008873.tif,copepod_calanoida,,54.83376666666667,1.0509883333333334,2023:08:15 07:07:37,,,,,,,,,,copepod,,,copepod
+pia1.2023-08-15.0706+N00009303.tif,copepod_calanoida,,54.833765,1.0500233333333333,2023:08:15 07:07:54,,,,,,,,,,copepod,,,copepod
+pia1.2023-08-15.0706+N00009534.tif,copepod_calanoida,,54.833753333333334,1.0495616666666667,2023:08:15 07:08:02,,,,,,,,,,copepod,,,copepod

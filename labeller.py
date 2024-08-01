@@ -4,24 +4,33 @@ import os
 import json
 from PIL import Image, ImageTk
 import torch
-from utils import resnet18, get_device, classify, extract_gps, save_to_files
+from utils import resnet18, get_device, classify, extract_gps, save_to_files, load_images_from_directory, load_model, bind_keys, setup_ui
+import time
+import pandas as pd
 
+def load_aphia_data(csv_path):
+    df = pd.read_csv(csv_path)
+    # Filter out rows with missing AphiaID
+    df = df.dropna(subset=['AphiaID'])
+    # Group by 'model_18_21May.pth' and 'class'
+    aphia_data = df.groupby('model_18_21May.pth')['AphiaID'].apply(list).to_dict()
+    return aphia_data
+    
 class COCOAnnotator(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.aphia_data = load_aphia_data('current_trainingsetclasses - Sheet1.csv')  # Adjust path if necessary
         self.title("COCO Metadata Annotator")
+        self.fixed_values = {}
 
         self.output_name = ""
         self.current_image_index = 0
         self.photo = None
         self.model = None
+        self.labeled_images_count = 0
 
-        self.common_fields = {
-            "survey ID": "",
-            "survey region": "",
-            "instrument": "PI10",
-            "class options considered": ""
-        }
+
+        self.aphiaID_options = [""]
 
         self.image_fields = {
             "location": "",
@@ -38,16 +47,17 @@ class COCOAnnotator(tk.Tk):
             "person classifying": "",
             "uncertain about class": "",
             "predicted_label": "",
-            "annotations": "",
-            "categories": ""
+            "taxonomist": "fixed",
+            "institute": "fixed",
+            "survey": "fixed"        
         }
 
         self.entries = {}
         self.checkboxes = {}
         self.selected_classes = set()
 
-        self.setup_ui()
-        self.bind_keys()
+        setup_ui(self)
+        bind_keys(self)
 
         self.device = get_device()
 
@@ -64,6 +74,7 @@ class COCOAnnotator(tk.Tk):
         print(self.model)
         self.checkbox_window = tk.Toplevel(self)
         self.checkbox_window.title("Select Classes and Scores")
+        self.checkbox_window.geometry("200x200")  # Set the size of the window
 
         # Create checkboxes for labels
         for label in self.LABELS.values():
@@ -90,48 +101,6 @@ class COCOAnnotator(tk.Tk):
         self.load_images()
         self.display_current_image()
 
-    def setup_ui(self):
-        self.upload_labels_button = tk.Button(self, text="1: Provide model labels (.json file)", command=self.upload_labels_json)
-        self.upload_labels_button.grid(row=0, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.load_model_button = tk.Button(self, text="2: Provide model (.pth file)", command=self.load_model_dialog)
-        self.load_model_button.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.select_labels_dir_button = tk.Button(self, text="3: Provide directory for labels (my/saved/outputs/dir)", command=self.select_labels_directory)
-        self.select_labels_dir_button.grid(row=2, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.select_dir_button = tk.Button(self, text="4: Provide directory for images (my/input/images/library)", command=self.select_image_directory)
-        self.select_dir_button.grid(row=3, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.import_config_button = tk.Button(self, text="Optional: Import custom labelling standard", command=self.import_config)
-        self.import_config_button.grid(row=4, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.process_all_button = tk.Button(self, text="Optional: Process All", command=self.process_all_images)
-        self.process_all_button.grid(row=5, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.main_frame = tk.Frame(self)
-        self.main_frame.grid(row=6, column=0, columnspan=2, sticky="nsew")
-
-        self.canvas = tk.Canvas(self.main_frame, width=500, height=500)
-        self.canvas.grid(row=0, column=0, padx=5, pady=5)
-
-        self.fields_frame = tk.Frame(self.main_frame)
-        self.fields_frame.grid(row=0, column=1, padx=5, pady=5, sticky="ns")
-
-        self.next_button = tk.Button(self, text="Next Image", command=self.save_fields_and_next_image)
-        self.next_button.grid(row=7, column=0, columnspan=2, pady=5, sticky="ew")
-
-        self.data = {
-            "info": self.common_fields,
-            "images": [],
-            "image_fields": self.image_fields
-        }
-
-    def bind_keys(self):
-        for i in range(1, 10):
-            self.bind(f"<Alt-Key-{i}>", self.focus_nth_entry)
-        self.bind("<Control-n>", lambda event: self.save_fields_and_next_image())
-
     def focus_nth_entry(self, event):
         try:
             n = int(event.char)
@@ -156,13 +125,8 @@ class COCOAnnotator(tk.Tk):
             self.display_current_image()
 
     def load_images(self):
-        self.images = []
-        valid_extensions = ('.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.bmp', '.BMP', '.gif', '.GIF', '.tiff', '.TIFF', '.tif', '.TIF', '.ico', '.ICO', '.webp', '.WEBP', '.svg', '.SVG', '.heic', '.HEIC', '.heif', '.HEIF', '.jfif', '.JFIF', '.pjpeg', '.PJPEG', '.pjp', '.PJP', '.avif', '.AVIF')
-        for dp, dn, filenames in os.walk(self.image_directory):
-            for f in filenames:
-                file_path = os.path.join(dp, f)
-                if f.lower().endswith(valid_extensions):
-                    self.images.append(file_path)
+        self.images = load_images_from_directory(self.image_directory)
+
 
     def display_current_image(self):
         if self.images:
@@ -184,82 +148,158 @@ class COCOAnnotator(tk.Tk):
             self.folder_name_entry.insert(0, folder_name)
 
             self.entries = {}
-            for i, (field, default_value) in enumerate(self.image_fields.items()):
-                tk.Label(self.fields_frame, text=f"{field}:").grid(row=i+1, column=0)
-                entry = tk.Entry(self.fields_frame)
-                entry.grid(row=i+1, column=1)
-                if field == "latitude":
-                    entry.insert(0, latitude if latitude != 'error' else "")
-                elif field == "longitude":
-                    entry.insert(0, longitude if longitude != 'error' else "")
-                elif field == "datetime":
-                    entry.insert(0, image_datetime if image_datetime != 'error' else "")
+            self.checkboxes = {}  # Store references to the checkbuttons here
+            
+            row = 1
+            for field, default_value in self.image_fields.items():
+                tk.Label(self.fields_frame, text=f"{field}:").grid(row=row, column=0)
+                
+                if field == "aphiaID":
+                    tk.Label(self.fields_frame, text="Select or Enter aphiaID:").grid(row=row, column=0)
+                    
+                    self.aphiaID_var = tk.StringVar(self)
+                    self.aphiaID_var.set("")  # Set default value
+                    
+                    self.aphiaID_menu = tk.OptionMenu(self.fields_frame, self.aphiaID_var, *self.aphiaID_options)
+                    self.aphiaID_menu.grid(row=row, column=2)
+                    
+                    self.custom_aphiaID_entry = tk.Entry(self.fields_frame)
+                    self.custom_aphiaID_entry.grid(row=row, column=1)
+                    self.custom_aphiaID_entry.insert(0, "")
+                    
+                    self.entries[field] = (self.aphiaID_var, self.custom_aphiaID_entry)
                 else:
-                    entry.insert(0, default_value)
-                self.entries[field] = entry
+                    entry = tk.Entry(self.fields_frame)
+                    entry.grid(row=row, column=1)
+                    if field == "latitude":
+                        entry.insert(0, latitude if latitude != 'error' else "")
+                    elif field == "longitude":
+                        entry.insert(0, longitude if longitude != 'error' else "")
+                    elif field == "datetime":
+                        entry.insert(0, image_datetime if image_datetime != 'error' else "")
+                    else:
+                        if field in self.fixed_values:
+                            entry.insert(0, self.fixed_values[field])
+                        #else:
+                        #    entry.insert(0, default_value)
+                    self.entries[field] = entry
+                    
+                    if default_value == "fixed":
+                        checkbox_var = tk.BooleanVar()
+                        checkbox = tk.Checkbutton(self.fields_frame, variable=checkbox_var)
+                        checkbox.grid(row=row, column=2)
+                        checkbox_var.set(field in self.fixed_values)  # Set checkbox state
+                        self.checkboxes[field] = checkbox_var
+                    
+                row += 1
 
             if self.model:
                 label, scores = classify(image_path, self.device, self.model, self.LABELS)
-                tk.Label(self.fields_frame, text="Predicted Label:").grid(row=len(self.image_fields) + 1, column=0)
+                tk.Label(self.fields_frame, text="Predicted Label:").grid(row=row, column=0)
                 self.predicted_label_entry = tk.Entry(self.fields_frame)
-                self.predicted_label_entry.grid(row=len(self.image_fields) + 1, column=1)
+                self.predicted_label_entry.grid(row=row, column=1)
                 self.predicted_label_entry.insert(0, label)
                 self.entries["predicted_label"] = self.predicted_label_entry
 
-                # Check score range using checkbox_window entries
                 min_score = float(self.min_score_entry.get())
                 max_score = float(self.max_score_entry.get())
-                if not (min_score <= scores.max().item() <= max_score):
+                
+                self.update_idletasks()
+                time.sleep(0.01)
+
+                if not (min_score <= scores.max().item() <= max_score) or label not in self.selected_classes:
                     self.save_fields_and_next_image()
                     return
 
-                if label not in self.selected_classes:
-                    self.save_fields_and_next_image()
-                    return
+                if label in self.aphia_data:
+                    self.update_aphiaID_options(self.aphia_data[label])
+                else:
+                    self.update_aphiaID_options([])  # Clear options if no data
             else:
                 messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
         else:
             print("No images found to display")
 
+
+
+
+    def update_aphiaID_options(self, aphiaID_list):
+        unique_aphiaIDs = sorted(set(aphiaID_list))  # Optional: sort to maintain a consistent order
+        
+        menu = self.aphiaID_menu["menu"]
+        menu.delete(0, "end")
+        
+        menu.add_command(label="", command=tk._setit(self.aphiaID_var, ""))
+        
+        for aphiaID in unique_aphiaIDs:
+            menu.add_command(label=aphiaID, command=tk._setit(self.aphiaID_var, aphiaID))
+        
+        self.aphiaID_var.set("")  # Ensure the default is empty
+
+
     def save_fields_and_next_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
-            image_data = {
-                "file_name": os.path.basename(image_path),
-                "folder_name": self.folder_name_entry.get(),
-                **{field: self.entries[field].get() for field in self.image_fields},
-                "predicted_label": self.entries.get("predicted_label", "").get()
-            }
+            if not self.model:
+                messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
+                return
+
+            label, scores = classify(image_path, self.device, self.model, self.LABELS)
+            min_score = float(self.min_score_entry.get())
+            max_score = float(self.max_score_entry.get())
+
+            if label not in self.selected_classes or not (min_score <= scores.max().item() <= max_score):
+                self.current_image_index += 1
+                if self.current_image_index < len(self.images):
+                    self.display_current_image()
+                return
+
+            selected_aphiaID = self.aphiaID_var.get()
+            custom_aphiaID = self.custom_aphiaID_entry.get().strip()
+            aphiaID = custom_aphiaID if custom_aphiaID else selected_aphiaID
+
+            image_data = {}
+            for field in self.image_fields:
+                if field == "aphiaID":
+                    image_data[field] = aphiaID
+                elif field in self.entries:
+                    if isinstance(self.entries[field], tuple):
+                        image_data[field] = self.entries[field][0].get()
+                    else:
+                        image_data[field] = self.entries[field].get()
+
+            predicted_label_entry = self.entries.get("predicted_label")
+            image_data["predicted_label"] = predicted_label_entry.get() if predicted_label_entry else ""
+
+            image_data["file_name"] = os.path.basename(image_path)
+            image_data["folder_name"] = self.folder_name_entry.get()
+
             self.data["images"].append(image_data)
 
+            # Save fixed values if their checkboxes are checked
+            for field, checkbox_var in self.checkboxes.items():
+                if checkbox_var.get():
+                    self.fixed_values[field] = self.entries[field].get()
+
+            self.labeled_images_count += 1
+
+            if self.labeled_images_count % 5 == 0:
+                self.save_data()
+
             self.current_image_index += 1
-            while self.current_image_index < len(self.images):
-                image_path = self.images[self.current_image_index]
-                if self.model:
-                    label, scores = classify(image_path, self.device, self.model, self.LABELS)
-                    
-                    # Check if label is in selected classes and score is in range
-                    min_score = float(self.min_score_entry.get())
-                    max_score = float(self.max_score_entry.get())
-                    if label in self.selected_classes and min_score <= scores.max().item() <= max_score:
-                        self.display_current_image()
-                        break
-                    else:
-                        self.current_image_index += 1
-                else:
-                    messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
-                    break
+            if self.current_image_index < len(self.images):
+                self.display_current_image()
             else:
                 messagebox.showinfo("Completed", "All images have been processed.")
                 save_to_files(self.data, self.labels_directory, self.output_name)
-                self.quit()
+
+
 
     def import_config(self):
         config_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
         if config_path:
             with open(config_path, 'r') as config_file:
                 config = json.load(config_file)
-                self.common_fields = config.get("common_fields", self.common_fields)
                 self.image_fields = config.get("image_fields", self.image_fields)
                 messagebox.showinfo("Config Imported", f"Configuration imported from {config_path}")
                 if self.images:
@@ -292,13 +332,7 @@ class COCOAnnotator(tk.Tk):
                 messagebox.showerror("Error", f"Failed to load labels: {e}")
 
     def load_model(self, model_path):
-        try:
-            model = resnet18(num_classes=len(self.LABELS)).to(self.device)
-            model.load_state_dict(torch.load(model_path, map_location=self.device))
-            return model
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load model: {e}")
-            return None
+        model = load_model(model_path, self.LABELS, self.device)
 
     def load_model_dialog(self):
         model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
@@ -335,6 +369,18 @@ class COCOAnnotator(tk.Tk):
             self.selected_classes.add(label)
         else:
             self.selected_classes.discard(label)
+
+    def save_data(self, event=None):
+        if not self.output_name:
+            messagebox.showwarning("No Output Name", "You are not saving your labels. Please provide a valid save directory.")
+            return
+
+        success = save_to_files(self.data, self.labels_directory, self.output_name)
+        
+        if not success:
+            messagebox.showerror("Save Failed", "Failed to save the file. Please check the save path and ensure the file is not already open.")
+
+        save_to_files(self.data, self.labels_directory, self.output_name)
 
 if __name__ == "__main__":
     app = COCOAnnotator()
