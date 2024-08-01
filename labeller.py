@@ -180,8 +180,8 @@ class COCOAnnotator(tk.Tk):
                     else:
                         if field in self.fixed_values:
                             entry.insert(0, self.fixed_values[field])
-                        else:
-                            entry.insert(0, default_value)
+                        #else:
+                        #    entry.insert(0, default_value)
                     self.entries[field] = entry
                     
                     if default_value == "fixed":
