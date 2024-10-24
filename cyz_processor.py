@@ -17,7 +17,7 @@ def select_particle(json_data, particle_id):
     particle = [p for p in json_data['particles'] if p['particleId'] == particle_id]
     return particle[0] if particle else None
 
-def get_pulse(particle, to):
+def get_pulse(particle):
     pulse_shapes = particle['pulseShapes'] if 'pulseShapes' in particle else None
     print(pulse_shapes)
     return pulse_shapes
@@ -160,8 +160,8 @@ class BlobApp:
             messagebox.showinfo("No Images", "No .tif files found in the directory!")
             return
         json_data = load_json(self.json_file)
-        selected_particle = select_particle(json_data, particle_id=1435)
-        get_pulse(selected_particle, to='C:/Users/JR13/Downloads/particle.tif')
+        selected_particle = select_particle(json_data, particle_id=int(self.tif_files[self.current_image_index].split(".tif")[0].split(".cyz")[1]))
+        get_pulse(selected_particle)
         self.current_image_index = 0
         self.display_image(self.tif_files[self.current_image_index])
         self.update_navigation_buttons()
