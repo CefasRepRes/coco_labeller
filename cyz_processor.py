@@ -7,9 +7,6 @@ from tkinter import messagebox
 
 
 class BlobApp:
-    # Define clone_dir as a class variable
-    clone_dir = None
-
     def __init__(self, root):
         self.root = root
         self.root.title("Blob File Loader")
@@ -17,6 +14,7 @@ class BlobApp:
 
         # Temporary directory and subfolder
         self.temp_dir = os.path.join(tempfile.gettempdir(), "BlobAppTemp")
+        self.clone_dir = os.path.join(self.temp_dir, "cyz2json")
         os.makedirs(self.temp_dir, exist_ok=True)
 
         # Clear the temp folder on startup
