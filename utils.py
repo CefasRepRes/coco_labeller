@@ -36,34 +36,7 @@ def classify(image_path, device, model, labels):
     class_name = labels.get(class_number, "Unknown")
     return class_name, scores[0]
 
-def extract_gps(filename_or_bytes):
-    try:
-        try:
-            tags = exifread.process_file(BytesIO(filename_or_bytes))
-        except:
-            with open(filename_or_bytes, "rb") as file:
-                image_bytes = file.read()
-            stream = BytesIO(image_bytes)
-            tags = exifread.process_file(stream)
 
-        latitude = tags.get("GPS GPSLatitude").values
-        longitude = tags.get("GPS GPSLongitude").values
-        latitude_ref = tags.get("GPS GPSLatitudeRef").values[0]
-        longitude_ref = tags.get("GPS GPSLongitudeRef").values[0]
-        image_datetime = tags.get("Image DateTime").values
-
-        latitude = float(latitude[0]) + float(latitude[1]) / 60 + float(latitude[2]) / 3600
-        if latitude_ref == "S":
-            latitude *= -1
-
-        longitude = float(longitude[0]) + float(longitude[1]) / 60 + float(longitude[2]) / 3600
-        if longitude_ref == "W":
-            longitude *= -1
-    except:
-        latitude = 'error'
-        longitude = 'error'
-        image_datetime = 'error'
-    return latitude, longitude, image_datetime
 
 def save_to_files(data, labels_directory, output_name):
     try:
@@ -91,26 +64,14 @@ def bind_keys(app):
     app.bind("<Control-s>", app.save_data)  # Bind Ctrl + S to save function
 
 
-def load_model(model_path, labels, device):
-    try:
-        model = resnet18(num_classes=len(labels)).to(device)
-        model.load_state_dict(torch.load(model_path, map_location=device))
-        return model
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to load model: {e}")
-        return None
+
 
 def setup_ui(app):
-    app.upload_labels_button = tk.Button(app, text="1: Provide model labels (.json file)", command=app.upload_labels_json)
-    app.upload_labels_button.grid(row=0, column=0, columnspan=2, pady=5, sticky="ew")
 
-    app.load_model_button = tk.Button(app, text="2: Provide model (.pth file)", command=app.load_model_dialog)
-    app.load_model_button.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
-
-    app.select_labels_dir_button = tk.Button(app, text="3: Provide directory for labels (my/saved/outputs/dir)", command=app.select_labels_directory)
+    app.select_labels_dir_button = tk.Button(app, text="1: Provide save output directory for labels (my/saved/outputs/dir)", command=app.select_labels_directory)
     app.select_labels_dir_button.grid(row=2, column=0, columnspan=2, pady=5, sticky="ew")
 
-    app.select_dir_button = tk.Button(app, text="4: Provide directory for images (my/input/images/library)", command=app.select_image_directory)
+    app.select_dir_button = tk.Button(app, text="2: Provide input cyz", command=app.select_image_directory)
     app.select_dir_button.grid(row=3, column=0, columnspan=2, pady=5, sticky="ew")
 
     app.import_config_button = tk.Button(app, text="Optional: Import custom labelling standard", command=app.import_config)

@@ -4,7 +4,7 @@ import os
 import json
 from PIL import Image, ImageTk
 import torch
-from utils import resnet18, get_device, classify, extract_gps, save_to_files, load_images_from_directory, load_model, bind_keys, setup_ui
+from utils import resnet18, get_device, classify, save_to_files, load_images_from_directory, bind_keys, setup_ui
 import time
 import pandas as pd
 
@@ -136,7 +136,6 @@ class COCOAnnotator(tk.Tk):
             self.photo = ImageTk.PhotoImage(image)
             self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
 
-            latitude, longitude, image_datetime = extract_gps(image_path)
 
             for widget in self.fields_frame.winfo_children():
                 widget.destroy()
@@ -314,55 +313,8 @@ class COCOAnnotator(tk.Tk):
             save_to_files(self.data, self.labels_directory, self.output_name)
             messagebox.showinfo("Completed", "All images have been processed.")
 
-    def upload_labels_json(self):
-        json_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
-        if json_path:
-            try:
-                with open(json_path, 'r') as json_file:
-                    data = json.load(json_file)
-                    labels_dict = data.get('labels', {})
-                    if not labels_dict:
-                        messagebox.showwarning("No Labels Found", "No labels found in the JSON file.")
-                    else:
-                        self.LABELS = {int(num): name for num, name in labels_dict.items()}
-                        messagebox.showinfo("Labels Loaded", f"Labels loaded successfully from {json_path}")
-                        if self.model:
-                            self.load_model_dialog()
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to load labels: {e}")
-
     def load_model(self, model_path):
         model = load_model(model_path, self.LABELS, self.device)
-
-    def load_model_dialog(self):
-        model_path = filedialog.askopenfilename(filetypes=[("PyTorch Model files", "*.pth")])
-        if model_path:
-            self.model = self.load_model(model_path)
-            if self.model:
-                messagebox.showinfo("Model Loaded", f"Model loaded successfully from {model_path}")
-                if not self.LABELS:
-                    messagebox.showwarning("No Labels", "No labels available. Please upload labels JSON first.")
-                    return
-                self.checkbox_window = tk.Toplevel(self)
-                self.checkbox_window.title("Select Classes and Scores")
-
-                for label in self.LABELS.values():
-                    var = tk.BooleanVar(value=True)  # Set the default value to True
-                    checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
-                    checkbox.pack(anchor="w")
-                    self.checkboxes[label] = var
-                    self.selected_classes.add(label)  # Add all labels to selected_classes by default
-
-                # Create score filters in checkbox_window
-                tk.Label(self.checkbox_window, text="Min Prediction Score:").pack(anchor="w")
-                self.min_score_entry = tk.Entry(self.checkbox_window)
-                self.min_score_entry.pack(anchor="w")
-                self.min_score_entry.insert(0, "0.0")
-
-                tk.Label(self.checkbox_window, text="Max Prediction Score:").pack(anchor="w")
-                self.max_score_entry = tk.Entry(self.checkbox_window)
-                self.max_score_entry.pack(anchor="w")
-                self.max_score_entry.insert(0, "1.0")
 
     def toggle_class(self, label):
         if self.checkboxes[label].get():
