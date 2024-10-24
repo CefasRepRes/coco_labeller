@@ -18,6 +18,13 @@ class BlobApp:
         self.compile_button = tk.Button(root, text="Download and compile cyz2json tool (required)", command=self.compile_cyz2json)
         self.compile_button.pack(pady=10)
         
+        self.path_label = tk.Label(root, text="Path to cyz2json Installation:")
+        self.path_label.pack(pady=5)
+        
+        self.path_entry = tk.Entry(root, width=100)
+        self.path_entry.insert(0, self.clone_dir + "\\bin\Cyz2Json.dll")
+        self.path_entry.pack(pady=5)
+        
         self.url_label = tk.Label(root, text="Blob File URL:")
         self.url_label.pack(pady=5)
         
@@ -34,22 +41,16 @@ class BlobApp:
         self.load_entry = tk.Entry(root, width=100)
         self.load_entry.pack(pady=5)
         
-        self.path_label = tk.Label(root, text="Path to cyz2json Installation:")
-        self.path_label.pack(pady=5)
-        
-        self.path_entry = tk.Entry(root, width=100)
-        self.path_entry.insert(0, self.clone_dir + "\\bin\Cyz2Json.dll")
-        self.path_entry.pack(pady=5)
-        
         self.load_button = tk.Button(root, text="Convert to json", command=self.load_file)
         self.load_button.pack(pady=10)
         
         # New button to process the file
-        self.process_button = tk.Button(root, text="Process Downloaded File", command=self.process_file)
+        self.process_button = tk.Button(root, text="Convert to csv", command=self.process_file)
         self.process_button.pack(pady=10)
 
         self.downloaded_file = None
-        self.json_file = "tempfile.json"
+        self.json_file = os.path.join(self.temp_dir, "tempfile.json")        
+        self.csv_file = os.path.join(self.temp_dir, "tempfile.csv")        
 
     def clear_temp_folder(self):
         for filename in os.listdir(self.temp_dir):
@@ -97,20 +98,15 @@ class BlobApp:
             return
         cyz2json_path = self.path_entry.get()
         try:
-            self.json_file = os.path.join(self.temp_dir, self.json_file)
             subprocess.run(["dotnet", cyz2json_path, self.downloaded_file, "--output", self.json_file], check=True)
             messagebox.showinfo("Success", f"File processed successfully. Output: {self.json_file}")
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Processing Error", f"Failed to process file: {e}")
 
     def process_file(self):
-        if not self.downloaded_file:
-            messagebox.showerror("Processing Error", "Please download a file first!")
-            return
         try:
-            self.json_file = os.path.join(self.downloaded_file, "tempfile.csv")
-            subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.json_file, "noimage", "noimage"], check=True)
-            messagebox.showinfo("Success", f"File processed successfully. Output: {self.json_file}")
+            subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.csv_file, self.temp_dir, self.temp_dir], check=True)
+            messagebox.showinfo("Success", f"File processed successfully. Output: {self.csv_file}")
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Processing Error", f"Failed to process file: {e}")
 
