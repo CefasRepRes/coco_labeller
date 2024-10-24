@@ -10,6 +10,7 @@ class BlobApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Blob File Loader")
+        self.root.geometry("800x400")  # Set the width to 800 pixels and height to 400 pixels
 
         # Temporary directory and subfolder
         self.temp_dir = os.path.join(tempfile.gettempdir(), "BlobAppTemp")
@@ -22,21 +23,28 @@ class BlobApp:
         self.url_label = tk.Label(root, text="Blob File URL:")
         self.url_label.pack(pady=5)
 
-        self.url_entry = tk.Entry(root, width=50)
-        self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/your_file.cyz")
+        self.url_entry = tk.Entry(root, width=100)  # Increased width
+        self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
         self.url_entry.pack(pady=5)
+
+        # Download button
+        self.download_button = tk.Button(root, text="Download", command=self.download_file)
+        self.download_button.pack(pady=10)
+
+        # Load file input
+        self.load_label = tk.Label(root, text="Load File Path:")
+        self.load_label.pack(pady=5)
+
+        self.load_entry = tk.Entry(root, width=100)  # Increased width
+        self.load_entry.pack(pady=5)
 
         # Path to cyz2json input
         self.path_label = tk.Label(root, text="Path to cyz2json Installation:")
         self.path_label.pack(pady=5)
 
-        self.path_entry = tk.Entry(root, width=50)
+        self.path_entry = tk.Entry(root, width=100)  # Increased width
         self.path_entry.insert(0, "./cyz2json/bin/Cyz2Json.dll")  # Default to a relative path
         self.path_entry.pack(pady=5)
-
-        # Download button
-        self.download_button = tk.Button(root, text="Download", command=self.download_file)
-        self.download_button.pack(pady=10)
 
         # Load button
         self.load_button = tk.Button(root, text="Load", command=self.load_file)
@@ -64,6 +72,10 @@ class BlobApp:
             self.downloaded_file = os.path.join(self.temp_dir, "downloaded_file.cyz")
             with open(self.downloaded_file, 'wb') as file:
                 file.write(response.content)
+
+            # Autopopulate the load entry with the downloaded file path
+            self.load_entry.delete(0, tk.END)  # Clear the existing content
+            self.load_entry.insert(0, self.downloaded_file)
 
             messagebox.showinfo("Download Success", f"File downloaded successfully to: {self.downloaded_file}")
         except requests.RequestException as e:
