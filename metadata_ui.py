@@ -36,9 +36,12 @@ class MetadataUI:
         self.on_save()  # Automatically save metadata before switching images
 
     def next_image(self):
-        # Placeholder for navigation logic
-        self.on_save()  # Automatically save metadata before switching images
-
+        if self.current_image_index < len(self.tif_files) - 1:
+            self.save_metadata()  # Automatically save metadata before switching images
+            self.current_image_index += 1
+            self.display_image(self.tif_files[self.current_image_index])
+            self.update_navigation_buttons()
+            
     def display_metadata(self, image_file, metadata):
         self.biological_entry.delete(0, tk.END)
         self.biological_entry.insert(0, metadata["biological"])
