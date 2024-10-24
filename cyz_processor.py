@@ -6,6 +6,22 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import csv
 import os
+import json
+
+def load_json(file_path):
+    with open(file_path, 'r') as f:
+        json_data = json.load(f)
+    return json_data
+
+def select_particle(json_data, particle_id):
+    particle = [p for p in json_data['particles'] if p['particleId'] == particle_id]
+    return particle[0] if particle else None
+
+def get_pulse(particle, to):
+    pulse_shapes = particle['pulseShapes'][0] if 'pulseShapes' in particle else None
+    print(pulse_shapes)
+    return pulse_shapes
+
 
 class BlobApp:
     def __init__(self, root):
@@ -143,7 +159,10 @@ class BlobApp:
         if not self.tif_files:
             messagebox.showinfo("No Images", "No .tif files found in the directory!")
             return
-
+        # Example usage
+        json_data = load_json('self.json_file.json')
+        selected_particle = select_particle(json_data, particle_id=1435)
+        get_pulse(selected_particle, to='C:/Users/JR13/Downloads/particle.tif')
         self.current_image_index = 0
         self.display_image(self.tif_files[self.current_image_index])
         self.update_navigation_buttons()
