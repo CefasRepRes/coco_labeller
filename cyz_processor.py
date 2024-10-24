@@ -18,7 +18,7 @@ def select_particle(json_data, particle_id):
     return particle[0] if particle else None
 
 def get_pulse(particle, to):
-    pulse_shapes = particle['pulseShapes'][0] if 'pulseShapes' in particle else None
+    pulse_shapes = particle['pulseShapes'] if 'pulseShapes' in particle else None
     print(pulse_shapes)
     return pulse_shapes
 
