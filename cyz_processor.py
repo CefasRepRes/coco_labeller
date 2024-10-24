@@ -4,12 +4,13 @@ import requests
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
+from PIL import Image, ImageTk  # Import for image handling
 
 class BlobApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Blob File Loader")
-        self.root.geometry("800x400")
+        self.root.geometry("800x600")
         self.temp_dir = os.path.join(tempfile.gettempdir(), "BlobAppTemp")
         self.clone_dir = os.path.join(self.temp_dir, "cyz2json")
         os.makedirs(self.temp_dir, exist_ok=True)
@@ -22,7 +23,7 @@ class BlobApp:
         self.path_label.pack(pady=5)
         
         self.path_entry = tk.Entry(root, width=100)
-        self.path_entry.insert(0, self.clone_dir + "\\bin\Cyz2Json.dll")
+        self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
         self.path_entry.pack(pady=5)
         
         self.url_label = tk.Label(root, text="Blob File URL:")
@@ -50,7 +51,10 @@ class BlobApp:
 
         self.downloaded_file = None
         self.json_file = os.path.join(self.temp_dir, "tempfile.json")        
-        self.csv_file = os.path.join(self.temp_dir, "tempfile.csv")        
+        self.csv_file = os.path.join(self.temp_dir, "tempfile.csv")
+        
+        # New image label for displaying the images
+        self.image_label = None
 
     def clear_temp_folder(self):
         for filename in os.listdir(self.temp_dir):
@@ -107,8 +111,32 @@ class BlobApp:
         try:
             subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.csv_file, self.temp_dir, self.temp_dir], check=True)
             messagebox.showinfo("Success", f"File processed successfully. Output: {self.csv_file}")
+            self.show_images()  # Call the method to display images
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Processing Error", f"Failed to process file: {e}")
+
+    def show_images(self):
+        tif_files = [f for f in os.listdir(self.temp_dir) if f.endswith('.tif')]
+        if not tif_files:
+            messagebox.showinfo("No Images", "No .tif files found in the directory!")
+            return
+        
+        self.display_image(os.path.join(self.temp_dir, tif_files[0]))  # Display the first image
+
+    def display_image(self, image_path):
+        img = Image.open(image_path)
+        img = img.resize((400, 400), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
+        img_tk = ImageTk.PhotoImage(img)
+        
+        if self.image_label is None:
+            self.image_label = tk.Label(self.root, image=img_tk)
+            self.image_label.image = img_tk
+            self.image_label.pack(pady=10)
+        else:
+            self.image_label.config(image=img_tk)
+            self.image_label.image = img_tk
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
