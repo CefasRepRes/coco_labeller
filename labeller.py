@@ -160,30 +160,6 @@ class COCOAnnotator(tk.Tk):
                     
                 row += 1
 
-            if self.model:
-                label, scores = classify(image_path, self.device, self.model, self.LABELS)
-                tk.Label(self.fields_frame, text="Predicted Label:").grid(row=row, column=0)
-                self.predicted_label_entry = tk.Entry(self.fields_frame)
-                self.predicted_label_entry.grid(row=row, column=1)
-                self.predicted_label_entry.insert(0, label)
-                self.entries["predicted_label"] = self.predicted_label_entry
-
-                min_score = 1#float(self.min_score_entry.get())
-                max_score = 0#float(self.max_score_entry.get())
-                
-                self.update_idletasks()
-                time.sleep(0.01)
-
-                if not (min_score <= scores.max().item() <= max_score) or label not in self.selected_classes:
-                    self.save_fields_and_next_image()
-                    return
-
-                if label in self.aphia_data:
-                    self.update_aphiaID_options(self.aphia_data[label])
-                else:
-                    self.update_aphiaID_options([])  # Clear options if no data
-            else:
-                messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
         else:
             print("No images found to display")
 
@@ -207,19 +183,9 @@ class COCOAnnotator(tk.Tk):
     def save_fields_and_next_image(self):
         if self.images:
             image_path = self.images[self.current_image_index]
-            if not self.model:
-                messagebox.showwarning("Model Not Loaded", "Please load a model before proceeding.")
-                return
 
-            label, scores = classify(image_path, self.device, self.model, self.LABELS)
-            min_score = 0#float(self.min_score_entry.get())
-            max_score = 1#float(self.max_score_entry.get())
 
-            if label not in self.selected_classes or not (min_score <= scores.max().item() <= max_score):
-                self.current_image_index += 1
-                if self.current_image_index < len(self.images):
-                    self.display_current_image()
-                return
+            self.display_current_image()
 
             selected_aphiaID = self.aphiaID_var.get()
             custom_aphiaID = self.custom_aphiaID_entry.get().strip()
@@ -235,19 +201,15 @@ class COCOAnnotator(tk.Tk):
                     else:
                         image_data[field] = self.entries[field].get()
 
-            predicted_label_entry = self.entries.get("predicted_label")
-            image_data["predicted_label"] = predicted_label_entry.get() if predicted_label_entry else ""
-
             image_data["file_name"] = os.path.basename(image_path)
             image_data["folder_name"] = self.folder_name_entry.get()
 
-            self.data["images"].append(image_data)
-
             # Save fixed values if their checkboxes are checked
             for field, checkbox_var in self.checkboxes.items():
-                if checkbox_var.get():
-                    self.fixed_values[field] = self.entries[field].get()
+                self.fixed_values[field] = self.entries[field].get()
+            self.data["images"].append(image_data)
 
+            print(image_data)
             self.labeled_images_count += 1
 
             if self.labeled_images_count % 5 == 0:
