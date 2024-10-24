@@ -159,8 +159,7 @@ class BlobApp:
         if not self.tif_files:
             messagebox.showinfo("No Images", "No .tif files found in the directory!")
             return
-        # Example usage
-        json_data = load_json('self.json_file.json')
+        json_data = load_json(self.json_file)
         selected_particle = select_particle(json_data, particle_id=1435)
         get_pulse(selected_particle, to='C:/Users/JR13/Downloads/particle.tif')
         self.current_image_index = 0
