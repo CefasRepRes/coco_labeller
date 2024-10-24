@@ -42,7 +42,10 @@ class BlobApp:
         self.load_label.pack(pady=5)
 
         self.load_entry = tk.Entry(root, width=100)
+        self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
+        self.downloaded_file = "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz"
         self.load_entry.pack(pady=5)
+
 
         self.load_button = tk.Button(root, text="Convert to json", command=self.load_file)
         self.load_button.pack(pady=10)
@@ -50,7 +53,6 @@ class BlobApp:
         self.process_button = tk.Button(root, text="Extract images and associated data", command=self.process_file)
         self.process_button.pack(pady=10)
 
-        self.downloaded_file = None
         self.json_file = os.path.join(self.temp_dir, "tempfile.json")
         self.csv_file = os.path.join(self.temp_dir, "tempfile.csv")
 
@@ -121,9 +123,6 @@ class BlobApp:
             messagebox.showerror("Download Error", f"Failed to download file: {e}")
 
     def load_file(self):
-        if not self.downloaded_file:
-            messagebox.showerror("Load Error", "Please download a file first!")
-            return
         cyz2json_path = self.path_entry.get()
         try:
             subprocess.run(["dotnet", cyz2json_path, self.downloaded_file, "--output", self.json_file], check=True)
