@@ -72,28 +72,7 @@ class COCOAnnotator(tk.Tk):
         print("loaded example model and model labels")
         print(self.LABELS)
         print(self.model)
-        self.checkbox_window = tk.Toplevel(self)
-        self.checkbox_window.title("Select Classes and Scores")
-        self.checkbox_window.geometry("200x200")  # Set the size of the window
 
-        # Create checkboxes for labels
-        for label in self.LABELS.values():
-            var = tk.BooleanVar(value=True)  # Set the default value to True
-            checkbox = tk.Checkbutton(self.checkbox_window, text=label, variable=var, command=lambda l=label: self.toggle_class(l))
-            checkbox.pack(anchor="w")
-            self.checkboxes[label] = var
-            self.selected_classes.add(label)  # Add all labels to selected_classes by default
-        
-        # Create score filters
-        tk.Label(self.checkbox_window, text="Prediction scores above:").pack(anchor="w")
-        self.min_score_entry = tk.Entry(self.checkbox_window)
-        self.min_score_entry.pack(anchor="w")
-        self.min_score_entry.insert(0, "0.0")
-
-        tk.Label(self.checkbox_window, text="Prediction scores below:").pack(anchor="w")
-        self.max_score_entry = tk.Entry(self.checkbox_window)
-        self.max_score_entry.pack(anchor="w")
-        self.max_score_entry.insert(0, "1.0")
 
         # Default images
         self.image_directory = str(os.getcwd())+"/example_images_folder"
@@ -170,17 +149,6 @@ class COCOAnnotator(tk.Tk):
                 else:
                     entry = tk.Entry(self.fields_frame)
                     entry.grid(row=row, column=1)
-                    if field == "latitude":
-                        entry.insert(0, latitude if latitude != 'error' else "")
-                    elif field == "longitude":
-                        entry.insert(0, longitude if longitude != 'error' else "")
-                    elif field == "datetime":
-                        entry.insert(0, image_datetime if image_datetime != 'error' else "")
-                    else:
-                        if field in self.fixed_values:
-                            entry.insert(0, self.fixed_values[field])
-                        #else:
-                        #    entry.insert(0, default_value)
                     self.entries[field] = entry
                     
                     if default_value == "fixed":
@@ -200,8 +168,8 @@ class COCOAnnotator(tk.Tk):
                 self.predicted_label_entry.insert(0, label)
                 self.entries["predicted_label"] = self.predicted_label_entry
 
-                min_score = float(self.min_score_entry.get())
-                max_score = float(self.max_score_entry.get())
+                min_score = 1#float(self.min_score_entry.get())
+                max_score = 0#float(self.max_score_entry.get())
                 
                 self.update_idletasks()
                 time.sleep(0.01)
@@ -244,8 +212,8 @@ class COCOAnnotator(tk.Tk):
                 return
 
             label, scores = classify(image_path, self.device, self.model, self.LABELS)
-            min_score = float(self.min_score_entry.get())
-            max_score = float(self.max_score_entry.get())
+            min_score = 0#float(self.min_score_entry.get())
+            max_score = 1#float(self.max_score_entry.get())
 
             if label not in self.selected_classes or not (min_score <= scores.max().item() <= max_score):
                 self.current_image_index += 1
