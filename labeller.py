@@ -130,6 +130,7 @@ class COCOAnnotator(tk.Tk):
         self.photo = ImageTk.PhotoImage(image)
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
 
+
     def populate_fields(self, image_path):
         for widget in self.fields_frame.winfo_children():
             widget.destroy()
@@ -151,7 +152,14 @@ class COCOAnnotator(tk.Tk):
                 self.create_aphiaID_field(row)
             else:
                 self.create_standard_field(field, default_value, row)
+
+                # Set the entry value if it's a fixed field
+                if default_value == "fixed" and field in self.fixed_values:
+                    self.entries[field].insert(0, self.fixed_values[field])
+
             row += 1
+
+
 
     def create_aphiaID_field(self, row):
         tk.Label(self.fields_frame, text="Select or Enter aphiaID:").grid(row=row, column=0)
