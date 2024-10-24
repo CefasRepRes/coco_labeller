@@ -7,23 +7,30 @@ from tkinter import messagebox
 
 
 class BlobApp:
+    # Define clone_dir as a class variable
+    clone_dir = None
+
     def __init__(self, root):
         self.root = root
         self.root.title("Blob File Loader")
-        self.root.geometry("800x400")  # Set the width to 800 pixels and height to 400 pixels
+        self.root.geometry("800x400")
 
         # Temporary directory and subfolder
         self.temp_dir = os.path.join(tempfile.gettempdir(), "BlobAppTemp")
-        os.makedirs(self.temp_dir, exist_ok=True)  # Create the temp subfolder if it doesn't exist
+        os.makedirs(self.temp_dir, exist_ok=True)
 
         # Clear the temp folder on startup
         self.clear_temp_folder()
+
+        # Compile cyz2json button
+        self.compile_button = tk.Button(root, text="Download and compile cyz2json tool (required)", command=self.compile_cyz2json)
+        self.compile_button.pack(pady=10)
 
         # Predefined URL input
         self.url_label = tk.Label(root, text="Blob File URL:")
         self.url_label.pack(pady=5)
 
-        self.url_entry = tk.Entry(root, width=100)  # Increased width
+        self.url_entry = tk.Entry(root, width=100)
         self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
         self.url_entry.pack(pady=5)
 
@@ -35,15 +42,15 @@ class BlobApp:
         self.load_label = tk.Label(root, text="Load File Path:")
         self.load_label.pack(pady=5)
 
-        self.load_entry = tk.Entry(root, width=100)  # Increased width
+        self.load_entry = tk.Entry(root, width=100)
         self.load_entry.pack(pady=5)
 
         # Path to cyz2json input
         self.path_label = tk.Label(root, text="Path to cyz2json Installation:")
         self.path_label.pack(pady=5)
 
-        self.path_entry = tk.Entry(root, width=100)  # Increased width
-        self.path_entry.insert(0, "./cyz2json/bin/Cyz2Json.dll")  # Default to a relative path
+        self.path_entry = tk.Entry(root, width=100)
+        self.path_entry.insert(0, "./cyz2json/bin/Cyz2Json.dll")
         self.path_entry.pack(pady=5)
 
         # Load button
@@ -62,19 +69,46 @@ class BlobApp:
             except Exception as e:
                 print(f"Error deleting file: {e}")
 
+    def compile_cyz2json(self):
+        """Clone and build the cyz2json project."""
+        BlobApp.clone_dir = os.path.join(self.temp_dir, "cyz2json")
+        
+        # Check if the directory already exists
+        if os.path.exists(BlobApp.clone_dir):
+            messagebox.showinfo("Info", "cyz2json already exists in " + BlobApp.clone_dir)
+            return
+
+        try:
+            # Step 1: Clone the repository
+            subprocess.run(["git", "clone", "https://github.com/OBAMANEXT/cyz2json.git", BlobApp.clone_dir], check=True)
+            # Step 2: Navigate to the cloned directory and build
+            subprocess.run(["dotnet", "build", "-o", "bin"], cwd=BlobApp.clone_dir, check=True)
+
+            messagebox.showinfo("Success", "cyz2json downloaded and compiled successfully!")
+            # Update the path entry with the compiled dll path
+            self.path_entry.delete(0, tk.END)
+            self.path_entry.insert(0, os.path.join(BlobApp.clone_dir, "bin", "Cyz2Json.dll"))
+        except subprocess.CalledProcessError as e:
+            messagebox.showerror("Compilation Error", f"Failed to compile cyz2json: {e}. Have you installed the requirement DotNet version 8.0? See https://github.com/OBAMANEXT/cyz2json")
+        except Exception as e:
+            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
     def download_file(self):
         """Download the blob file."""
         url = self.url_entry.get()
 
         try:
             response = requests.get(url, allow_redirects=True)
-            response.raise_for_status()  # Raise an error for bad responses
-            self.downloaded_file = os.path.join(self.temp_dir, "downloaded_file.cyz")
+            response.raise_for_status()
+
+            # Extract the filename from the URL
+            filename = os.path.basename(url)
+            self.downloaded_file = os.path.join(self.temp_dir, filename)
+
             with open(self.downloaded_file, 'wb') as file:
                 file.write(response.content)
 
-            # Autopopulate the load entry with the downloaded file path
-            self.load_entry.delete(0, tk.END)  # Clear the existing content
+            self.load_entry.delete(0, tk.END)
             self.load_entry.insert(0, self.downloaded_file)
 
             messagebox.showinfo("Download Success", f"File downloaded successfully to: {self.downloaded_file}")
@@ -87,10 +121,9 @@ class BlobApp:
             messagebox.showerror("Load Error", "Please download a file first!")
             return
 
-        cyz2json_path = self.path_entry.get()  # Get the path from the input
+        cyz2json_path = self.path_entry.get()
 
         try:
-            # Run the subprocess command
             output_file = os.path.join(self.temp_dir, "tempfile.json")
             subprocess.run(
                 ["dotnet", cyz2json_path, self.downloaded_file, "--output", output_file],
