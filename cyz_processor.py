@@ -45,7 +45,7 @@ class BlobApp:
         self.load_button.pack(pady=10)
         
         # New button to process the file
-        self.process_button = tk.Button(root, text="Extract images", command=self.process_file)
+        self.process_button = tk.Button(root, text="Extract images and associated data", command=self.process_file)
         self.process_button.pack(pady=10)
 
         self.downloaded_file = None
