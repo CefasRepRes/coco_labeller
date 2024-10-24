@@ -1,4 +1,3 @@
-import os 
 import tempfile
 import requests
 import subprocess
@@ -6,8 +5,7 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import csv
-from metadata_handler import MetadataHandler  # Import the new class
-from metadata_ui import MetadataUI  # Import the new UI class
+import os
 
 class BlobApp:
     def __init__(self, root):
@@ -18,11 +16,6 @@ class BlobApp:
         self.clone_dir = os.path.join(self.temp_dir, "cyz2json")
         os.makedirs(self.temp_dir, exist_ok=True)
         self.clear_temp_folder()
-
-        # Initialize the MetadataHandler
-        self.metadata_handler = MetadataHandler(self.temp_dir)
-        self.metadata_ui = MetadataUI(self.save_metadata_callback)  # Pass save callback to MetadataUI
-        self.metadata_ui.window.withdraw()  # Hide the window initially
 
         # UI Components
         self.compile_button = tk.Button(root, text="Download and compile cyz2json tool (required)", command=self.compile_cyz2json)
@@ -49,8 +42,6 @@ class BlobApp:
         self.load_label.pack(pady=5)
 
         self.load_entry = tk.Entry(root, width=100)
-        self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
-        self.downloaded_file = "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz"
         self.load_entry.pack(pady=5)
 
         self.load_button = tk.Button(root, text="Convert to json", command=self.load_file)
@@ -59,12 +50,35 @@ class BlobApp:
         self.process_button = tk.Button(root, text="Extract images and associated data", command=self.process_file)
         self.process_button.pack(pady=10)
 
+        self.downloaded_file = None
         self.json_file = os.path.join(self.temp_dir, "tempfile.json")
         self.csv_file = os.path.join(self.temp_dir, "tempfile.csv")
 
         self.image_label = None
         self.tif_files = []
         self.current_image_index = 0
+
+        # Navigation Buttons
+        self.prev_button = tk.Button(root, text="Previous", command=self.prev_image, state=tk.DISABLED)
+        self.next_button = tk.Button(root, text="Next", command=self.next_image, state=tk.DISABLED)
+        self.prev_button.pack(side=tk.LEFT, padx=20)
+        self.next_button.pack(side=tk.RIGHT, padx=20)
+
+        # Metadata Input
+        self.biological_label = tk.Label(root, text="Biological (Y/N):")
+        self.biological_label.pack(pady=5)
+
+        self.biological_entry = tk.Entry(root, width=10)
+        self.biological_entry.pack(pady=5)
+
+        self.species_label = tk.Label(root, text="Suspected Species:")
+        self.species_label.pack(pady=5)
+
+        self.species_entry = tk.Entry(root, width=100)
+        self.species_entry.pack(pady=5)
+
+        # Store metadata per image
+        self.metadata = {}
 
     def clear_temp_folder(self):
         for filename in os.listdir(self.temp_dir):
@@ -107,6 +121,9 @@ class BlobApp:
             messagebox.showerror("Download Error", f"Failed to download file: {e}")
 
     def load_file(self):
+        if not self.downloaded_file:
+            messagebox.showerror("Load Error", "Please download a file first!")
+            return
         cyz2json_path = self.path_entry.get()
         try:
             subprocess.run(["dotnet", cyz2json_path, self.downloaded_file, "--output", self.json_file], check=True)
@@ -130,8 +147,7 @@ class BlobApp:
 
         self.current_image_index = 0
         self.display_image(self.tif_files[self.current_image_index])
-        self.metadata_ui.update_navigation_buttons(self.current_image_index, len(self.tif_files))
-        self.metadata_ui.show()  # Show the metadata window
+        self.update_navigation_buttons()
 
     def display_image(self, image_file):
         image_path = os.path.join(self.temp_dir, image_file)
@@ -148,14 +164,42 @@ class BlobApp:
             self.image_label.image = img_tk
 
         # Load saved metadata if it exists
-        metadata = self.metadata_handler.load_metadata(image_file)  # Load metadata for the current image
-        self.metadata_ui.display_metadata(image_file, metadata)  # Pass to UI for display
+        metadata = self.metadata.get(image_file, {"biological": "", "species": ""})
+        self.biological_entry.delete(0, tk.END)
+        self.biological_entry.insert(0, metadata["biological"])
+        self.species_entry.delete(0, tk.END)
+        self.species_entry.insert(0, metadata["species"])
 
-    def save_metadata_callback(self):
+    def next_image(self):
+        if self.current_image_index < len(self.tif_files) - 1:
+            self.save_metadata()  # Automatically save metadata before switching images
+            self.current_image_index += 1
+            self.display_image(self.tif_files[self.current_image_index])
+            self.update_navigation_buttons()
+
+    def prev_image(self):
+        if self.current_image_index > 0:
+            self.save_metadata()  # Automatically save metadata before switching images
+            self.current_image_index -= 1
+            self.display_image(self.tif_files[self.current_image_index])
+            self.update_navigation_buttons()
+
+    def update_navigation_buttons(self):
+        self.prev_button.config(state=tk.NORMAL if self.current_image_index > 0 else tk.DISABLED)
+        self.next_button.config(state=tk.NORMAL if self.current_image_index < len(self.tif_files) - 1 else tk.DISABLED)
+
+    def save_metadata(self):
         image_file = self.tif_files[self.current_image_index]
-        biological = self.metadata_ui.biological_entry.get()
-        species = self.metadata_ui.species_entry.get()
-        self.metadata_handler.save_metadata(image_file, biological, species)
+        biological = self.biological_entry.get()
+        species = self.species_entry.get()
+        self.metadata[image_file] = {"biological": biological, "species": species}
+
+        # Save all metadata to a CSV file
+        with open(os.path.join(self.temp_dir, "metadata.csv"), mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Image File", "Biological", "Suspected Species"])
+            for image, data in self.metadata.items():
+                writer.writerow([image, data["biological"], data["species"]])
 
 if __name__ == "__main__":
     root = tk.Tk()
