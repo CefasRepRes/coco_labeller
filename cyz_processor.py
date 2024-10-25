@@ -2,7 +2,7 @@ import tempfile
 import requests
 import subprocess
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import csv
 import os
@@ -22,8 +22,6 @@ def get_pulses(particles):
     pulses = {p['particleId']: p.get('pulseShapes') for p in particles}
     return pulses
 
-
-
 class BlobApp:
     def __init__(self, root):
         self.root = root
@@ -33,6 +31,9 @@ class BlobApp:
         self.clone_dir = os.path.join(self.temp_dir, "cyz2json")
         os.makedirs(self.temp_dir, exist_ok=True)
         self.clear_temp_folder()
+
+        # Output directory
+        self.output_dir = ""
 
         # UI Components
         self.compile_button = tk.Button(root, text="Download and compile cyz2json tool (required)", command=self.compile_cyz2json)
@@ -63,15 +64,17 @@ class BlobApp:
         self.downloaded_file = "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz"
         self.load_entry.pack(pady=5)
 
-
         self.load_button = tk.Button(root, text="Convert to json", command=self.load_file)
         self.load_button.pack(pady=10)
+
+        self.output_dir_button = tk.Button(root, text="Select Output Directory", command=self.select_output_dir)
+        self.output_dir_button.pack(pady=10)
 
         self.process_button = tk.Button(root, text="Extract images and associated data", command=self.process_file)
         self.process_button.pack(pady=10)
 
         self.json_file = os.path.join(self.temp_dir, "tempfile.json")
-        self.csv_file = os.path.join(self.temp_dir, "tempfile.csv")
+        self.csv_file = None
 
         self.image_label = None
         self.tif_files = []
@@ -124,6 +127,11 @@ class BlobApp:
         except Exception as e:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
+    def select_output_dir(self):
+        self.output_dir = filedialog.askdirectory()
+        if self.output_dir:
+            messagebox.showinfo("Output Directory Selected", f"Output files will be saved in: {self.output_dir}")
+
     def download_file(self):
         url = self.url_entry.get()
         try:
@@ -148,11 +156,13 @@ class BlobApp:
             messagebox.showerror("Processing Error", f"Failed to process file: {e}")
 
     def process_file(self):
+        if not self.output_dir:
+            messagebox.showerror("Output Directory Not Set", "Please select an output directory.")
+            return
+        self.csv_file = os.path.join(self.output_dir, "particles_data.csv")
         try:
-            subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.csv_file, self.temp_dir, self.temp_dir], check=True)
+            subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.csv_file, self.output_dir, self.output_dir], check=True)
             particles_with_images = pd.read_csv(self.csv_file)['id'].tolist()
-            print("getting pulse shapes for these particles")
-            print(particles_with_images)
             json_data = load_json(self.json_file)
             selected_particles = select_particles(json_data, particle_ids=particles_with_images)
             pulses = get_pulses(selected_particles)
@@ -160,13 +170,13 @@ class BlobApp:
             csv_df = pd.read_csv(self.csv_file).reset_index(drop=True)
             pulsesdf = pd.concat([pulsesdf, csv_df], axis=1)
             pulsesdf.to_csv(self.csv_file, index=False)
-            messagebox.showinfo("Success", f"File processed successfully. Output: {self.csv_file}")
+            messagebox.showinfo("Success", f"Files processed successfully. Output in: {self.csv_file}")
             self.show_images()
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Processing Error", f"Failed to process file: {e}")
 
     def show_images(self):
-        self.tif_files = [f for f in os.listdir(self.temp_dir) if f.endswith('.tif')]
+        self.tif_files = [f for f in os.listdir(self.output_dir) if f.endswith('.tif')]
         if not self.tif_files:
             messagebox.showinfo("No Images", "No .tif files found in the directory!")
             return
@@ -175,7 +185,7 @@ class BlobApp:
         self.update_navigation_buttons()
 
     def display_image(self, image_file):
-        image_path = os.path.join(self.temp_dir, image_file)
+        image_path = os.path.join(self.output_dir, image_file)
         img = Image.open(image_path)
         img = img.resize((400, 400), Image.LANCZOS)
         img_tk = ImageTk.PhotoImage(img)
@@ -219,8 +229,9 @@ class BlobApp:
         species = self.species_entry.get()
         self.metadata[image_file] = {"biological": biological, "species": species}
 
-        # Save all metadata to a CSV file
-        with open(os.path.join(self.temp_dir, "metadata.csv"), mode="w", newline="") as file:
+        # Save all metadata to a CSV file in the specified output directory
+        metadata_file_path = os.path.join(self.output_dir, "metadata.csv")
+        with open(metadata_file_path, mode="w", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(["Image File", "Biological", "Suspected Species"])
             for image, data in self.metadata.items():
