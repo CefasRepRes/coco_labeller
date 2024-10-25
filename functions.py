@@ -110,6 +110,8 @@ def display_image(root,current_image_index, output_dir, image_label, tif_files, 
     species_entry.insert(0, metadata["species"])
 
 
+
+
 def update_navigation_buttons(prev_button, next_button, current_image_index, total_images):
     """Update the state of navigation buttons based on the current image index."""
     prev_button.config(state=tk.NORMAL if current_image_index > 0 else tk.DISABLED)
@@ -123,7 +125,7 @@ def save_metadata(current_image_index, tif_files, metadata, biological_entry, sp
     species = species_entry.get()
     metadata[image_file] = {"biological": biological, "species": species}
 
-    metadata_file_path = os.path.join(output_dir, "metadata.csv")
+    metadata_file_path = os.path.join(output_dir, "label_data.csv")
     with open(metadata_file_path, mode="w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["Image File", "Biological", "Suspected Species"])
