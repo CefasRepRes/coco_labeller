@@ -159,9 +159,6 @@ class BlobApp:
         if not self.tif_files:
             messagebox.showinfo("No Images", "No .tif files found in the directory!")
             return
-        json_data = load_json(self.json_file)
-        selected_particle = select_particle(json_data, particle_id=int(self.tif_files[self.current_image_index].split(".tif")[0].split(".cyz")[1]))
-        get_pulse(selected_particle)
         self.current_image_index = 0
         self.display_image(self.tif_files[self.current_image_index])
         self.update_navigation_buttons()
@@ -189,6 +186,9 @@ class BlobApp:
 
     def next_image(self):
         if self.current_image_index < len(self.tif_files) - 1:
+            json_data = load_json(self.json_file)
+            selected_particle = select_particle(json_data, particle_id=int(self.tif_files[self.current_image_index].split(".tif")[0].split(".cyz")[1]))
+            self.pulses = get_pulse(selected_particle)
             self.save_metadata()  # Automatically save metadata before switching images
             self.current_image_index += 1
             self.display_image(self.tif_files[self.current_image_index])
@@ -207,16 +207,18 @@ class BlobApp:
 
     def save_metadata(self):
         image_file = self.tif_files[self.current_image_index]
+        pulses = self.pulses.get()
+        print(pulses)
         biological = self.biological_entry.get()
         species = self.species_entry.get()
-        self.metadata[image_file] = {"biological": biological, "species": species}
+        self.metadata[image_file] = {"pulses":pulses, "biological": biological, "species": species}
 
         # Save all metadata to a CSV file
         with open(os.path.join(self.temp_dir, "metadata.csv"), mode="w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["Image File", "Biological", "Suspected Species"])
+            writer.writerow(["Image File", "Pulse Shapes","Biological", "Suspected Species"])
             for image, data in self.metadata.items():
-                writer.writerow([image, data["biological"], data["species"]])
+                writer.writerow([image, data["pulses"], data["biological"], data["species"]])
 
 if __name__ == "__main__":
     root = tk.Tk()
