@@ -20,8 +20,8 @@ class BlobApp:
         os.makedirs(self.temp_dir, exist_ok=True)
 
         self.species_dict = {
-            'a': 'Nothing visible',
-            'b': 'Round diatom',
+            'a': 'Small or nothing visible',
+            'b': 'Other',
             'c': 'Chaetoceros',
             'd': 'Detritus',
             'x': 'NA'
