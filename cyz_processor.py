@@ -1,4 +1,3 @@
-where it is easy to do so, remove content from my main app code and put it into my adjacent functions.py file:
 import tempfile
 import requests
 import subprocess
