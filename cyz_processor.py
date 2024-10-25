@@ -9,7 +9,6 @@ import os
 import pandas as pd
 import functions
 
-
 class BlobApp:
     def __init__(self, root):
         self.root = root
