@@ -14,14 +14,14 @@ def load_json(file_path):
         json_data = json.load(f)
     return json_data
 
-def select_particle(json_data, particle_id):
-    particle = [p for p in json_data['particles'] if p['particleId'] == particle_id]
-    return particle[0] if particle else None
+def select_particles(json_data, particle_ids):
+    particles = [p for p in json_data['particles'] if p['particleId'] in particle_ids]
+    return particles if particles else None
 
-def get_pulse(particle):
-    pulse_shapes = particle['pulseShapes'] if 'pulseShapes' in particle else None
-    print(pulse_shapes)
-    return pulse_shapes
+def get_pulses(particles):
+    pulses = {p['particleId']: p.get('pulseShapes') for p in particles}
+    return pulses
+
 
 
 class BlobApp:
@@ -153,6 +153,13 @@ class BlobApp:
             particles_with_images = pd.read_csv(self.csv_file)['id'].tolist()
             print("getting pulse shapes for these particles")
             print(particles_with_images)
+            json_data = load_json(self.json_file)
+            selected_particles = select_particles(json_data, particle_ids=particles_with_images)
+            pulses = get_pulses(selected_particles)
+            pulsesdf = pd.DataFrame.from_dict(pulses, orient='index').reset_index(drop=True)
+            csv_df = pd.read_csv(self.csv_file).reset_index(drop=True)
+            pulsesdf = pd.concat([pulsesdf, csv_df], axis=1)
+            pulsesdf.to_csv(self.csv_file, index=False)
             messagebox.showinfo("Success", f"File processed successfully. Output: {self.csv_file}")
             self.show_images()
         except subprocess.CalledProcessError as e:
@@ -190,9 +197,6 @@ class BlobApp:
 
     def next_image(self):
         if self.current_image_index < len(self.tif_files) - 1:
-            json_data = load_json(self.json_file)
-            selected_particle = select_particle(json_data, particle_id=int(self.tif_files[self.current_image_index].split(".tif")[0].split(".cyz")[1]))
-            self.pulses = get_pulse(selected_particle)
             self.save_metadata()  # Automatically save metadata before switching images
             self.current_image_index += 1
             self.display_image(self.tif_files[self.current_image_index])
@@ -211,18 +215,16 @@ class BlobApp:
 
     def save_metadata(self):
         image_file = self.tif_files[self.current_image_index]
-        pulses = self.pulses
-        print(pulses)
         biological = self.biological_entry.get()
         species = self.species_entry.get()
-        self.metadata[image_file] = {"pulses":pulses, "biological": biological, "species": species}
+        self.metadata[image_file] = {"biological": biological, "species": species}
 
         # Save all metadata to a CSV file
         with open(os.path.join(self.temp_dir, "metadata.csv"), mode="w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["Image File", "Pulse Shapes","Biological", "Suspected Species"])
+            writer.writerow(["Image File", "Biological", "Suspected Species"])
             for image, data in self.metadata.items():
-                writer.writerow([image, data["pulses"], data["biological"], data["species"]])
+                writer.writerow([image, data["biological"], data["species"]])
 
 if __name__ == "__main__":
     root = tk.Tk()
