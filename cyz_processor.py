@@ -1,3 +1,4 @@
+where it is easy to do so, remove content from my main app code and put it into my adjacent functions.py file:
 import tempfile
 import requests
 import subprocess
@@ -6,8 +7,15 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import csv
 import os
-import json
 import pandas as pd
+import functions
+
+
+import tempfile
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from PIL import Image, ImageTk
+import os
 import functions
 
 class BlobApp:
@@ -18,130 +26,71 @@ class BlobApp:
         self.temp_dir = os.path.join(tempfile.gettempdir(), "BlobAppTemp")
         self.clone_dir = os.path.join(self.temp_dir, "cyz2json")
         os.makedirs(self.temp_dir, exist_ok=True)
-        self.clear_temp_folder()
 
-        # Output directory
+        # Core attributes
         self.output_dir = ""
-
-        # UI Components
-        self.compile_button = tk.Button(root, text="Download and compile cyz2json tool (required)", command=self.compile_cyz2json)
-        self.compile_button.pack(pady=10)
-
-        self.path_label = tk.Label(root, text="Path to cyz2json Installation:")
-        self.path_label.pack(pady=5)
-
-        self.path_entry = tk.Entry(root, width=100)
-        self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
-        self.path_entry.pack(pady=5)
-
-        self.url_label = tk.Label(root, text="Blob File URL:")
-        self.url_label.pack(pady=5)
-
-        self.url_entry = tk.Entry(root, width=100)
-        self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
-        self.url_entry.pack(pady=5)
-
-        self.download_button = tk.Button(root, text="Download", command=self.download_file)
-        self.download_button.pack(pady=10)
-
-        self.load_label = tk.Label(root, text="Load File Path:")
-        self.load_label.pack(pady=5)
-
-        self.load_entry = tk.Entry(root, width=100)
-        self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
-        self.downloaded_file = "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz"
-        self.load_entry.pack(pady=5)
-
-        self.load_button = tk.Button(root, text="Convert to json", command=self.load_file)
-        self.load_button.pack(pady=10)
-
-        self.output_dir_button = tk.Button(root, text="Select Output Directory", command=self.select_output_dir)
-        self.output_dir_button.pack(pady=10)
-
-        self.process_button = tk.Button(root, text="Extract images and associated data", command=self.process_file)
-        self.process_button.pack(pady=10)
-
         self.json_file = os.path.join(self.temp_dir, "tempfile.json")
         self.csv_file = None
-
         self.image_label = None
         self.tif_files = []
         self.current_image_index = 0
+        self.metadata = {}
 
-        # Navigation Buttons
-        self.prev_button = tk.Button(root, text="Previous", command=self.prev_image, state=tk.DISABLED)
-        self.next_button = tk.Button(root, text="Next", command=self.next_image, state=tk.DISABLED)
+        # UI Setup
+        self.create_widgets()
+
+        # Clear temporary files
+        functions.clear_temp_folder(self.temp_dir)
+
+    def create_widgets(self):
+        self.compile_button = tk.Button(self.root, text="Download and compile cyz2json tool (required)", 
+                                        command=lambda: functions.compile_cyz2json(self.clone_dir, self.path_entry))
+        self.compile_button.pack(pady=10)
+        
+        self.path_label = tk.Label(self.root, text="Path to cyz2json Installation:")
+        self.path_label.pack(pady=5)
+        
+        self.path_entry = tk.Entry(self.root, width=100)
+        self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
+        self.path_entry.pack(pady=5)
+
+        self.url_label = tk.Label(self.root, text="Blob File URL:")
+        self.url_label.pack(pady=5)
+        self.url_entry = tk.Entry(self.root, width=100)
+        self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
+        self.url_entry.pack(pady=5)
+        self.download_button = tk.Button(self.root, text="Download", command=lambda: functions.download_file(self.url_entry, self.temp_dir, self.load_entry))
+        self.download_button.pack(pady=10)
+
+        self.load_label = tk.Label(self.root, text="Load File Path:")
+        self.load_label.pack(pady=5)
+        self.load_entry = tk.Entry(self.root, width=100)
+        self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
+        self.load_entry.pack(pady=5)
+
+        self.load_button = tk.Button(self.root, text="Convert to json", command=lambda: functions.load_file(self.path_entry.get(), self.load_entry.get(), self.json_file))
+        self.load_button.pack(pady=10)
+
+        self.output_dir_button = tk.Button(self.root, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
+        self.output_dir_button.pack(pady=10)
+
+        self.process_button = tk.Button(self.root, text="Extract images and associated data", command=self.process_file)
+        self.process_button.pack(pady=10)
+
+        self.prev_button = tk.Button(self.root, text="Previous", command=self.prev_image, state=tk.DISABLED)
+        self.next_button = tk.Button(self.root, text="Next", command=self.next_image, state=tk.DISABLED)
         self.prev_button.pack(side=tk.LEFT, padx=20)
         self.next_button.pack(side=tk.RIGHT, padx=20)
 
-        # Metadata Input
-        self.biological_label = tk.Label(root, text="Biological (Y/N):")
+        self.biological_label = tk.Label(self.root, text="Biological (Y/N):")
         self.biological_label.pack(pady=5)
-
-        self.biological_entry = tk.Entry(root, width=10)
+        self.biological_entry = tk.Entry(self.root, width=10)
         self.biological_entry.pack(pady=5)
 
-        self.species_label = tk.Label(root, text="Suspected Species:")
+        self.species_label = tk.Label(self.root, text="Suspected Species:")
         self.species_label.pack(pady=5)
-
-        self.species_entry = tk.Entry(root, width=100)
+        self.species_entry = tk.Entry(self.root, width=100)
         self.species_entry.pack(pady=5)
-
-        # Store metadata per image
-        self.metadata = {}
-
-    def clear_temp_folder(self):
-        for filename in os.listdir(self.temp_dir):
-            file_path = os.path.join(self.temp_dir, filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(f"Error deleting file: {e}")
-
-    def compile_cyz2json(self):
-        BlobApp.clone_dir = os.path.join(self.temp_dir, "cyz2json")
-        if os.path.exists(BlobApp.clone_dir):
-            messagebox.showinfo("Info", "cyz2json already exists in " + BlobApp.clone_dir)
-            return
-        try:
-            subprocess.run(["git", "clone", "https://github.com/OBAMANEXT/cyz2json.git", BlobApp.clone_dir], check=True)
-            subprocess.run(["dotnet", "build", "-o", "bin"], cwd=BlobApp.clone_dir, check=True)
-            messagebox.showinfo("Success", "cyz2json downloaded and compiled successfully!")
-            self.path_entry.delete(0, tk.END)
-            self.path_entry.insert(0, os.path.join(BlobApp.clone_dir, "bin", "Cyz2Json.dll"))
-        except subprocess.CalledProcessError as e:
-            messagebox.showerror("Compilation Error", f"Failed to compile cyz2json: {e}. Have you installed the requirement DotNet version 8.0? See https://github.com/OBAMANEXT/cyz2json")
-        except Exception as e:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-
-    def select_output_dir(self):
-        self.output_dir = filedialog.askdirectory()
-        if self.output_dir:
-            messagebox.showinfo("Output Directory Selected", f"Output files will be saved in: {self.output_dir}")
-
-    def download_file(self):
-        url = self.url_entry.get()
-        try:
-            response = requests.get(url, allow_redirects=True)
-            response.raise_for_status()
-            filename = os.path.basename(url)
-            self.downloaded_file = os.path.join(self.temp_dir, filename)
-            with open(self.downloaded_file, 'wb') as file:
-                file.write(response.content)
-            self.load_entry.delete(0, tk.END)
-            self.load_entry.insert(0, self.downloaded_file)
-            messagebox.showinfo("Download Success", f"File downloaded successfully to: {self.downloaded_file}")
-        except requests.RequestException as e:
-            messagebox.showerror("Download Error", f"Failed to download file: {e}")
-
-    def load_file(self):
-        cyz2json_path = self.path_entry.get()
-        try:
-            subprocess.run(["dotnet", cyz2json_path, self.downloaded_file, "--output", self.json_file], check=True)
-            messagebox.showinfo("Success", f"File processed successfully. Output: {self.json_file}")
-        except subprocess.CalledProcessError as e:
-            messagebox.showerror("Processing Error", f"Failed to process file: {e}")
 
     def process_file(self):
         if not self.output_dir:
@@ -151,9 +100,9 @@ class BlobApp:
         try:
             subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.csv_file, self.output_dir, self.output_dir], check=True)
             particles_with_images = pd.read_csv(self.csv_file)['id'].tolist()
-            json_data = load_json(self.json_file)
-            selected_particles = select_particles(json_data, particle_ids=particles_with_images)
-            pulses = get_pulses(selected_particles)
+            json_data = functions.load_json(self.json_file)
+            selected_particles = functions.select_particles(json_data, particle_ids=particles_with_images)
+            pulses = functions.get_pulses(selected_particles)
             pulsesdf = pd.DataFrame.from_dict(pulses, orient='index').reset_index(drop=True)
             csv_df = pd.read_csv(self.csv_file).reset_index(drop=True)
             pulsesdf = pd.concat([pulsesdf, csv_df], axis=1)
@@ -169,61 +118,30 @@ class BlobApp:
             messagebox.showinfo("No Images", "No .tif files found in the directory!")
             return
         self.current_image_index = 0
-        self.display_image(self.tif_files[self.current_image_index])
-        self.update_navigation_buttons()
-
-    def display_image(self, image_file):
-        image_path = os.path.join(self.output_dir, image_file)
-        img = Image.open(image_path)
-        img = img.resize((400, 400), Image.LANCZOS)
-        img_tk = ImageTk.PhotoImage(img)
-
-        if self.image_label is None:
-            self.image_label = tk.Label(self.root, image=img_tk)
-            self.image_label.image = img_tk
-            self.image_label.pack(pady=10)
-        else:
-            self.image_label.config(image=img_tk)
-            self.image_label.image = img_tk
-
-        # Load saved metadata if it exists
-        metadata = self.metadata.get(image_file, {"biological": "", "species": ""})
-        self.biological_entry.delete(0, tk.END)
-        self.biological_entry.insert(0, metadata["biological"])
-        self.species_entry.delete(0, tk.END)
-        self.species_entry.insert(0, metadata["species"])
+        functions.display_image(self.current_image_index, self.output_dir, self.image_label, 
+                                self.tif_files, self.metadata, self.biological_entry, self.species_entry)
+        functions.update_navigation_buttons(self.prev_button, self.next_button, 
+                                            self.current_image_index, len(self.tif_files))
 
     def next_image(self):
         if self.current_image_index < len(self.tif_files) - 1:
-            self.save_metadata()  # Automatically save metadata before switching images
+            functions.save_metadata(self.current_image_index, self.tif_files, self.metadata, 
+                                    self.biological_entry, self.species_entry, self.output_dir)
             self.current_image_index += 1
-            self.display_image(self.tif_files[self.current_image_index])
-            self.update_navigation_buttons()
+            functions.display_image(self.current_image_index, self.output_dir, self.image_label, 
+                                    self.tif_files, self.metadata, self.biological_entry, self.species_entry)
+            functions.update_navigation_buttons(self.prev_button, self.next_button, 
+                                                self.current_image_index, len(self.tif_files))
 
     def prev_image(self):
         if self.current_image_index > 0:
-            self.save_metadata()  # Automatically save metadata before switching images
+            functions.save_metadata(self.current_image_index, self.tif_files, self.metadata, 
+                                    self.biological_entry, self.species_entry, self.output_dir)
             self.current_image_index -= 1
-            self.display_image(self.tif_files[self.current_image_index])
-            self.update_navigation_buttons()
-
-    def update_navigation_buttons(self):
-        self.prev_button.config(state=tk.NORMAL if self.current_image_index > 0 else tk.DISABLED)
-        self.next_button.config(state=tk.NORMAL if self.current_image_index < len(self.tif_files) - 1 else tk.DISABLED)
-
-    def save_metadata(self):
-        image_file = self.tif_files[self.current_image_index]
-        biological = self.biological_entry.get()
-        species = self.species_entry.get()
-        self.metadata[image_file] = {"biological": biological, "species": species}
-
-        # Save all metadata to a CSV file in the specified output directory
-        metadata_file_path = os.path.join(self.output_dir, "metadata.csv")
-        with open(metadata_file_path, mode="w", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(["Image File", "Biological", "Suspected Species"])
-            for image, data in self.metadata.items():
-                writer.writerow([image, data["biological"], data["species"]])
+            functions.display_image(self.current_image_index, self.output_dir, self.image_label, 
+                                    self.tif_files, self.metadata, self.biological_entry, self.species_entry)
+            functions.update_navigation_buttons(self.prev_button, self.next_button, 
+                                                self.current_image_index, len(self.tif_files))
 
 if __name__ == "__main__":
     root = tk.Tk()
