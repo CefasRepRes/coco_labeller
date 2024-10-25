@@ -7,6 +7,7 @@ from PIL import Image, ImageTk
 import csv
 import os
 import json
+import pandas as pd
 
 def load_json(file_path):
     with open(file_path, 'r') as f:
@@ -149,6 +150,9 @@ class BlobApp:
     def process_file(self):
         try:
             subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.csv_file, self.temp_dir, self.temp_dir], check=True)
+            particles_with_images = pd.read_csv(self.csv_file)['id'].tolist()
+            print("getting pulse shapes for these particles")
+            print(particles_with_images)
             messagebox.showinfo("Success", f"File processed successfully. Output: {self.csv_file}")
             self.show_images()
         except subprocess.CalledProcessError as e:
@@ -207,7 +211,7 @@ class BlobApp:
 
     def save_metadata(self):
         image_file = self.tif_files[self.current_image_index]
-        pulses = self.pulses.get()
+        pulses = self.pulses
         print(pulses)
         biological = self.biological_entry.get()
         species = self.species_entry.get()
