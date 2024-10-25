@@ -117,7 +117,7 @@ class BlobApp:
             messagebox.showinfo("No Images", "No .tif files found in the directory!")
             return
         self.current_image_index = 0
-        functions.display_image(self.current_image_index, self.output_dir, self.image_label, 
+        functions.display_image(self.root,self.current_image_index, self.output_dir, self.image_label, 
                                 self.tif_files, self.metadata, self.biological_entry, self.species_entry)
         functions.update_navigation_buttons(self.prev_button, self.next_button, 
                                             self.current_image_index, len(self.tif_files))
@@ -127,7 +127,7 @@ class BlobApp:
             functions.save_metadata(self.current_image_index, self.tif_files, self.metadata, 
                                     self.biological_entry, self.species_entry, self.output_dir)
             self.current_image_index += 1
-            functions.display_image(self.current_image_index, self.output_dir, self.image_label, 
+            functions.display_image(self.root,self.current_image_index, self.output_dir, self.image_label, 
                                     self.tif_files, self.metadata, self.biological_entry, self.species_entry)
             functions.update_navigation_buttons(self.prev_button, self.next_button, 
                                                 self.current_image_index, len(self.tif_files))
@@ -137,7 +137,7 @@ class BlobApp:
             functions.save_metadata(self.current_image_index, self.tif_files, self.metadata, 
                                     self.biological_entry, self.species_entry, self.output_dir)
             self.current_image_index -= 1
-            functions.display_image(self.current_image_index, self.output_dir, self.image_label, 
+            functions.display_image(self.root,self.current_image_index, self.output_dir, self.image_label, 
                                     self.tif_files, self.metadata, self.biological_entry, self.species_entry)
             functions.update_navigation_buttons(self.prev_button, self.next_button, 
                                                 self.current_image_index, len(self.tif_files))

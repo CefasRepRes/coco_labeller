@@ -3,8 +3,10 @@ import subprocess
 import os
 import json
 import pandas as pd
-from tkinter import messagebox
-
+from tkinter import messagebox, filedialog
+from PIL import Image, ImageTk
+import tkinter as tk
+import csv
 
 def clear_temp_folder(temp_dir):
     """Clear the temporary directory."""
@@ -68,23 +70,23 @@ def select_output_dir(app):
         messagebox.showinfo("Output Directory Selected", f"Output files will be saved in: {app.output_dir}")
 
 
-def load_json(json_file):
-    """Load JSON data from a file."""
-    with open(json_file) as f:
-        return json.load(f)
 
+def load_json(file_path):
+    with open(file_path, 'r') as f:
+        json_data = json.load(f)
+    return json_data
 
 def select_particles(json_data, particle_ids):
-    """Filter particles from the JSON data based on given IDs."""
-    return [particle for particle in json_data if particle['id'] in particle_ids]
+    particles = [p for p in json_data['particles'] if p['particleId'] in particle_ids]
+    return particles if particles else None
+
+def get_pulses(particles):
+    pulses = {p['particleId']: p.get('pulseShapes') for p in particles}
+    return pulses
 
 
-def get_pulses(selected_particles):
-    """Extract pulses from the selected particles."""
-    return {particle['id']: particle['pulses'] for particle in selected_particles}
 
-
-def display_image(current_image_index, output_dir, image_label, tif_files, metadata, biological_entry, species_entry):
+def display_image(root,current_image_index, output_dir, image_label, tif_files, metadata, biological_entry, species_entry):
     """Display the image and update metadata entry fields."""
     image_file = tif_files[current_image_index]
     image_path = os.path.join(output_dir, image_file)
