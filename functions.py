@@ -85,8 +85,12 @@ def get_pulses(particles):
     return pulses
 
 
-def display_image(self, image_file):
-    image_path = os.path.join(self.output_dir, image_file)
+
+def display_image(self,root,current_image_index, output_dir, image_label, tif_files, metadata, biological_entry, species_entry):
+    """Display the image and update metadata entry fields."""
+    image_file = tif_files[current_image_index]
+    image_path = os.path.join(output_dir, image_file)
+    
     img = Image.open(image_path)
     img = img.resize((400, 400), Image.LANCZOS)
     img_tk = ImageTk.PhotoImage(img)
@@ -105,6 +109,7 @@ def display_image(self, image_file):
     self.biological_entry.insert(0, metadata["biological"])
     self.species_entry.delete(0, tk.END)
     self.species_entry.insert(0, metadata["species"])
+
 
 
 def update_navigation_buttons(prev_button, next_button, current_image_index, total_images):
