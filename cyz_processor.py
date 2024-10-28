@@ -129,6 +129,7 @@ class BlobApp:
             pulsesdf = pd.DataFrame.from_dict(pulses, orient='index').reset_index(drop=True)
             csv_df = pd.read_csv(self.csv_file).reset_index(drop=True)
             pulsesdf = pd.concat([pulsesdf, csv_df], axis=1)
+            pulsesdf['filename'] = self.load_entry.get()
             pulsesdf.to_csv(self.csv_file, index=False)
             messagebox.showinfo("Success", f"Files processed successfully. Output in: {self.csv_file}")
             self.show_images()
