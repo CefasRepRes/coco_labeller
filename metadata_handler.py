@@ -8,9 +8,9 @@ class MetadataHandler:
         self.metadata_dir = os.path.join(temp_dir, "metadata")
         os.makedirs(self.metadata_dir, exist_ok=True)
 
-    def save_metadata(self, image_file, biological, species):
+    def save_metadata(self, image_file, confidence, species):
         metadata = {
-            "biological": biological,
+            "confidence": confidence,
             "species": species
         }
         metadata_file = os.path.join(self.metadata_dir, f"{image_file}.json")
@@ -23,4 +23,4 @@ class MetadataHandler:
             with open(metadata_file, 'r') as f:
                 return json.load(f)
         else:
-            return {"biological": "", "species": ""}  # Return empty defaults if no metadata exists
+            return {"confidence": "", "species": ""}  # Return empty defaults if no metadata exists

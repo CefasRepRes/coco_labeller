@@ -8,6 +8,7 @@ import csv
 import os
 import pandas as pd
 import functions
+from tkinter import ttk
 
 class BlobApp:
     def __init__(self, root):
@@ -19,11 +20,15 @@ class BlobApp:
         os.makedirs(self.temp_dir, exist_ok=True)
 
         self.species_dict = {
-            'a': 'Small or nothing visible',
-            'b': 'Other',
-            'c': 'Chaetoceros',
-            'd': 'Detritus',
-            'x': 'NA'
+            'z': 'Small or nothing present',
+            'x': 'Detritus',
+            'c': 'Not clear or not sure of species',
+            'v': 'Other species or type of object',
+            'b': 'Multiple objects or single object that seems to have been broken up',
+            'a': 'Chaetoceros',
+            's': 'Rhizosolenia',
+            'd': 'Leptocylindrus',
+            'f': 'Melosira'
         }
 
         self.output_dir = ""
@@ -34,18 +39,35 @@ class BlobApp:
         self.current_image_index = 0
         self.metadata = {}
 
+
         self.create_widgets()
 
-        self.root.bind('<Shift-A>', self.set_species_a)
-        self.root.bind('<Shift-B>', self.set_species_b)
-        self.root.bind('<Shift-C>', self.set_species_c)
-        self.root.bind('<Shift-D>', self.set_species_d)
-        self.root.bind('<Shift-X>', self.set_species_x)
-        self.root.bind('<Shift-space>', self.next_image)
+        for key in self.species_dict.keys():
+            self.root.bind(f'<Shift-{key.upper()}>', self.set_species)
+        
+        self.root.bind('<plus>', self.increase_confidence)
+        self.root.bind('<minus>', self.decrease_confidence)
 
         functions.clear_temp_folder(self.temp_dir)
 
+
     def create_widgets(self):
+
+        # Create a UI table for key bindings
+        key_table_label = tk.Label(self.root, text="Key Bindings:")
+        key_table_label.pack(pady=5)
+
+        key_table = ttk.Treeview(self.root, columns=("Key", "Description"), show="headings", height=8)
+        key_table.heading("Key", text="Key")
+        key_table.heading("Description", text="Description")
+        key_table.column("Key", anchor="center", width=80)
+        key_table.column("Description", anchor="w", width=400)
+        key_table.pack(pady=5)
+
+        # Populate the table with species_dict data
+        for key, description in self.species_dict.items():
+            key_table.insert("", "end", values=(f"Shift+{key.upper()}", description))
+
         self.compile_button = tk.Button(self.root, text="Download and compile cyz2json tool (required)", 
                                         command=lambda: functions.compile_cyz2json(self.clone_dir, self.path_entry))
         self.compile_button.pack(pady=10)
@@ -85,35 +107,42 @@ class BlobApp:
         self.prev_button.pack(side=tk.LEFT, padx=20)
         self.next_button.pack(side=tk.RIGHT, padx=20)
 
-        self.biological_label = tk.Label(self.root, text="Biological (Y/N):")
-        self.biological_label.pack(pady=5)
-        self.biological_entry = tk.Entry(self.root, width=10)
-        self.biological_entry.pack(pady=5)
+        self.confidence_label = tk.Label(self.root, text="Optional: Assign a confidence to your label with + -")
+        self.confidence_label.pack(pady=5)
+        self.confidence_entry = tk.Entry(self.root, width=10)
+        self.confidence_entry.pack(pady=5)
 
         self.species_label = tk.Label(self.root, text="Suspected Species:")
         self.species_label.pack(pady=5)
         self.species_entry = tk.Entry(self.root, width=100)
         self.species_entry.pack(pady=5)
+    
+    
+    def set_species(self, event):
+        key_pressed = event.keysym.lower()
+        if key_pressed in self.species_dict:
+            self.species_entry.delete(0, tk.END)
+            self.species_entry.insert(0, self.species_dict[key_pressed])
 
-    def set_species_a(self, event):
-        self.species_entry.delete(0, tk.END)
-        self.species_entry.insert(0, self.species_dict['a'])
 
-    def set_species_b(self, event):
-        self.species_entry.delete(0, tk.END)
-        self.species_entry.insert(0, self.species_dict['b'])
+    def increase_confidence(self, event):
+        current_value = self.confidence_entry.get()
+        try:
+            new_value = int(current_value) + 1
+        except ValueError:
+            new_value = 1
+        self.confidence_entry.delete(0, tk.END)
+        self.confidence_entry.insert(0, str(new_value))
 
-    def set_species_c(self, event):
-        self.species_entry.delete(0, tk.END)
-        self.species_entry.insert(0, self.species_dict['c'])
+    def decrease_confidence(self, event):
+        current_value = self.confidence_entry.get()
+        try:
+            new_value = int(current_value) - 1
+        except ValueError:
+            new_value = -1  # Set a default value if invalid
+        self.confidence_entry.delete(0, tk.END)
+        self.confidence_entry.insert(0, str(new_value))
 
-    def set_species_d(self, event):
-        self.species_entry.delete(0, tk.END)
-        self.species_entry.insert(0, self.species_dict['d'])
-
-    def set_species_x(self, event):
-        self.species_entry.delete(0, tk.END)
-        self.species_entry.insert(0, self.species_dict['x'])
 
     def process_file(self):
         if not self.output_dir:
@@ -143,27 +172,27 @@ class BlobApp:
             return
         self.current_image_index = 0
         functions.display_image(self, self.root, self.current_image_index, self.output_dir, self.image_label, 
-                                self.tif_files, self.metadata, self.biological_entry, self.species_entry)
+                                self.tif_files, self.metadata, self.confidence_entry, self.species_entry)
         functions.update_navigation_buttons(self.prev_button, self.next_button, 
                                             self.current_image_index, len(self.tif_files))
 
     def next_image(self, event=None):
         if self.current_image_index < len(self.tif_files) - 1:
             functions.save_metadata(self.current_image_index, self.tif_files, self.metadata, 
-                                    self.biological_entry, self.species_entry, self.output_dir)
+                                    self.confidence_entry, self.species_entry, self.output_dir)
             self.current_image_index += 1
             functions.display_image(self, self.root, self.current_image_index, self.output_dir, self.image_label, 
-                                    self.tif_files, self.metadata, self.biological_entry, self.species_entry)
+                                    self.tif_files, self.metadata, self.confidence_entry, self.species_entry)
             functions.update_navigation_buttons(self.prev_button, self.next_button, 
                                                 self.current_image_index, len(self.tif_files))
 
     def prev_image(self):
         if self.current_image_index > 0:
             functions.save_metadata(self.current_image_index, self.tif_files, self.metadata, 
-                                    self.biological_entry, self.species_entry, self.output_dir)
+                                    self.confidence_entry, self.species_entry, self.output_dir)
             self.current_image_index -= 1
             functions.display_image(self, self.root, self.current_image_index, self.output_dir, self.image_label, 
-                                    self.tif_files, self.metadata, self.biological_entry, self.species_entry)
+                                    self.tif_files, self.metadata, self.confidence_entry, self.species_entry)
             functions.update_navigation_buttons(self.prev_button, self.next_button, 
                                                 self.current_image_index, len(self.tif_files))
 

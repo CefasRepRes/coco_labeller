@@ -13,11 +13,11 @@ class MetadataUI:
         self.window.geometry("400x300")
 
         # Metadata Input
-        self.biological_label = tk.Label(self.window, text="Biological (Y/N):")
-        self.biological_label.pack(pady=5)
+        self.confidence_label = tk.Label(self.window, text="confidence (Y/N):")
+        self.confidence_label.pack(pady=5)
 
-        self.biological_entry = tk.Entry(self.window, width=10)
-        self.biological_entry.pack(pady=5)
+        self.confidence_entry = tk.Entry(self.window, width=10)
+        self.confidence_entry.pack(pady=5)
 
         self.species_label = tk.Label(self.window, text="Suspected Species:")
         self.species_label.pack(pady=5)
@@ -43,8 +43,8 @@ class MetadataUI:
             self.update_navigation_buttons()
             
     def display_metadata(self, image_file, metadata):
-        self.biological_entry.delete(0, tk.END)
-        self.biological_entry.insert(0, metadata["biological"])
+        self.confidence_entry.delete(0, tk.END)
+        self.confidence_entry.insert(0, metadata["confidence"])
         self.species_entry.delete(0, tk.END)
         self.species_entry.insert(0, metadata["species"])
 

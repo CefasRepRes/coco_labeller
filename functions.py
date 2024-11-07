@@ -86,7 +86,7 @@ def get_pulses(particles):
 
 
 
-def display_image(self,root,current_image_index, output_dir, image_label, tif_files, metadata, biological_entry, species_entry):
+def display_image(self,root,current_image_index, output_dir, image_label, tif_files, metadata, confidence_entry, species_entry):
     """Display the image and update metadata entry fields."""
     image_file = tif_files[current_image_index]
     image_path = os.path.join(output_dir, image_file)
@@ -104,9 +104,9 @@ def display_image(self,root,current_image_index, output_dir, image_label, tif_fi
         self.image_label.image = img_tk
 
     # Load saved metadata if it exists
-    metadata = self.metadata.get(image_file, {"biological": "", "species": ""})
-    self.biological_entry.delete(0, tk.END)
-    self.biological_entry.insert(0, metadata["biological"])
+    metadata = self.metadata.get(image_file, {"confidence": "", "species": ""})
+    self.confidence_entry.delete(0, tk.END)
+    self.confidence_entry.insert(0, metadata["confidence"])
     self.species_entry.delete(0, tk.END)
     self.species_entry.insert(0, metadata["species"])
 
@@ -118,17 +118,17 @@ def update_navigation_buttons(prev_button, next_button, current_image_index, tot
     next_button.config(state=tk.NORMAL if current_image_index < total_images - 1 else tk.DISABLED)
 
 
-def save_metadata(current_image_index, tif_files, metadata, biological_entry, species_entry, output_dir):
+def save_metadata(current_image_index, tif_files, metadata, confidence_entry, species_entry, output_dir):
     """Save metadata to a CSV file."""
     image_file = tif_files[current_image_index]
-    biological = biological_entry.get()
+    confidence = confidence_entry.get()
     species = species_entry.get()
-    metadata[image_file] = {"biological": biological, "species": species}
+    metadata[image_file] = {"confidence": confidence, "species": species}
 
     metadata_file_path = os.path.join(output_dir, "label_data.csv")
     with open(metadata_file_path, mode="w", newline="") as file:
         writer = csv.writer(file)
-        writer.writerow(["Image File", "Biological", "Suspected Species"])
+        writer.writerow(["Image File", "confidence", "Suspected Species"])
         for image, data in metadata.items():
-            writer.writerow([image, data["biological"], data["species"]])
+            writer.writerow([image, data["confidence"], data["species"]])
 
