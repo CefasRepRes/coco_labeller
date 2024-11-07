@@ -47,75 +47,84 @@ class BlobApp:
         
         self.root.bind('<plus>', self.increase_confidence)
         self.root.bind('<minus>', self.decrease_confidence)
-
+        self.root.bind('<Shift-space>', self.next_image)
+        
         functions.clear_temp_folder(self.temp_dir)
 
 
     def create_widgets(self):
-
-        # Create a UI table for key bindings
-        key_table_label = tk.Label(self.root, text="Key Bindings:")
+        # Frame for image and navigation buttons
+        image_frame = tk.Frame(self.root)
+        image_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Key bindings table on the right side
+        table_frame = tk.Frame(self.root)
+        table_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=10, pady=10)
+        
+        key_table_label = tk.Label(table_frame, text="Key Bindings:")
         key_table_label.pack(pady=5)
-
-        key_table = ttk.Treeview(self.root, columns=("Key", "Description"), show="headings", height=8)
+        
+        key_table = ttk.Treeview(table_frame, columns=("Key", "Description"), show="headings", height=8)
         key_table.heading("Key", text="Key")
         key_table.heading("Description", text="Description")
         key_table.column("Key", anchor="center", width=80)
         key_table.column("Description", anchor="w", width=400)
         key_table.pack(pady=5)
-
-        # Populate the table with species_dict data
+        
         for key, description in self.species_dict.items():
             key_table.insert("", "end", values=(f"Shift+{key.upper()}", description))
-
-        self.compile_button = tk.Button(self.root, text="Download and compile cyz2json tool (required)", 
+        
+        # Buttons and other inputs on the left (image frame)
+        self.compile_button = tk.Button(image_frame, text="Download and compile cyz2json tool (required)", 
                                         command=lambda: functions.compile_cyz2json(self.clone_dir, self.path_entry))
         self.compile_button.pack(pady=10)
-
-        self.path_label = tk.Label(self.root, text="Path to cyz2json Installation:")
+        
+        self.path_label = tk.Label(image_frame, text="Path to cyz2json Installation:")
         self.path_label.pack(pady=5)
-
-        self.path_entry = tk.Entry(self.root, width=100)
+        
+        self.path_entry = tk.Entry(image_frame, width=100)
         self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
         self.path_entry.pack(pady=5)
-
-        self.url_label = tk.Label(self.root, text="Blob File URL:")
+        
+        self.url_label = tk.Label(image_frame, text="Blob File URL:")
         self.url_label.pack(pady=5)
-        self.url_entry = tk.Entry(self.root, width=100)
+        self.url_entry = tk.Entry(image_frame, width=100)
         self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
         self.url_entry.pack(pady=5)
-        self.download_button = tk.Button(self.root, text="Download", command=lambda: functions.download_file(self.url_entry, self.temp_dir, self.load_entry))
+        
+        self.download_button = tk.Button(image_frame, text="Download", command=lambda: functions.download_file(self.url_entry, self.temp_dir, self.load_entry))
         self.download_button.pack(pady=10)
-
-        self.load_label = tk.Label(self.root, text="Load File Path:")
+        
+        self.load_label = tk.Label(image_frame, text="Load File Path:")
         self.load_label.pack(pady=5)
-        self.load_entry = tk.Entry(self.root, width=100)
+        self.load_entry = tk.Entry(image_frame, width=100)
         self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
         self.load_entry.pack(pady=5)
-
-        self.load_button = tk.Button(self.root, text="Convert to json", command=lambda: functions.load_file(self.path_entry.get(), self.load_entry.get(), self.json_file))
+        
+        self.load_button = tk.Button(image_frame, text="Convert to json", command=lambda: functions.load_file(self.path_entry.get(), self.load_entry.get(), self.json_file))
         self.load_button.pack(pady=10)
-
-        self.output_dir_button = tk.Button(self.root, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
+        
+        self.output_dir_button = tk.Button(image_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
         self.output_dir_button.pack(pady=10)
-
-        self.process_button = tk.Button(self.root, text="Extract images and associated data", command=self.process_file)
+        
+        self.process_button = tk.Button(image_frame, text="Extract images and associated data", command=self.process_file)
         self.process_button.pack(pady=10)
-
-        self.prev_button = tk.Button(self.root, text="Previous", command=self.prev_image, state=tk.DISABLED)
-        self.next_button = tk.Button(self.root, text="Next", command=self.next_image, state=tk.DISABLED)
+        
+        self.prev_button = tk.Button(image_frame, text="Previous", command=self.prev_image, state=tk.DISABLED)
+        self.next_button = tk.Button(image_frame, text="Next", command=self.next_image, state=tk.DISABLED)
         self.prev_button.pack(side=tk.LEFT, padx=20)
         self.next_button.pack(side=tk.RIGHT, padx=20)
-
-        self.confidence_label = tk.Label(self.root, text="Optional: Assign a confidence to your label with + -")
+        
+        self.confidence_label = tk.Label(image_frame, text="Optional: Assign a confidence to your label with + -")
         self.confidence_label.pack(pady=5)
-        self.confidence_entry = tk.Entry(self.root, width=10)
+        self.confidence_entry = tk.Entry(image_frame, width=10)
         self.confidence_entry.pack(pady=5)
-
-        self.species_label = tk.Label(self.root, text="Suspected Species:")
+        
+        self.species_label = tk.Label(image_frame, text="Suspected Species:")
         self.species_label.pack(pady=5)
-        self.species_entry = tk.Entry(self.root, width=100)
+        self.species_entry = tk.Entry(image_frame, width=100)
         self.species_entry.pack(pady=5)
+
     
     
     def set_species(self, event):
