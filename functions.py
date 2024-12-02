@@ -7,6 +7,7 @@ from tkinter import messagebox, filedialog
 from PIL import Image, ImageTk
 import tkinter as tk
 import csv
+from listmode import extract
 
 def clear_temp_folder(temp_dir):
     """Clear the temporary directory."""
@@ -49,6 +50,7 @@ def compile_r_requirements(r_dir, rpath_entry):
         subprocess.run([r_dir+"/bin/Rscript.exe", "./install_rpackages.R"], check=True)
         rpath_entry.delete(0, tk.END)
         rpath_entry.insert(0, os.path.join(r_dir, "bin", "Rscript.exe"))
+        messagebox.showinfo("Download Success", f"R downloaded and libraries installed")
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Compilation Error", f"Failed to compile r: {e}.")
     except Exception as e:
@@ -79,6 +81,28 @@ def load_file(cyz2json_path, downloaded_file, json_file):
         messagebox.showinfo("Success", f"File processed successfully. Output: {json_file}")
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Processing Error", f"Failed to process file: {e}")
+
+def to_listmode(json_file, listmode_file):
+    """Convert .cyz file to .json using cyz2json tool."""
+    try:
+        data = json.load(open(json_file, encoding="utf-8-sig"))
+        lines = extract(particles=data["particles"], dateandtime=data["instrument"]["measurementResults"]["start"], images='', save_images_to='')
+        df = pd.DataFrame(lines)
+        #df.insert(loc=0, column="filename", value=os.path.basename(filename))
+        df.to_csv(listmode_file, index=False)
+    except subprocess.CalledProcessError as e:
+        messagebox.showerror("Processing Error", f"Failed to process file: {e}")
+
+def apply_r(listmode_file, predictions_file, rpath_entry):
+    """Convert .cyz file to .json using cyz2json tool."""
+    try:
+        subprocess.run([rpath_entry, "rf_predict.R", "19_&__FINAL_PELTIC_TRAIN_strat.csv_final_rf_model.rds", listmode_file, predictions_file], check=True)
+        messagebox.showinfo("Success", f"Listmode extracted successfully. Output: {listmode_file}")
+    except subprocess.CalledProcessError as e:
+        messagebox.showerror("Processing Error", f"Failed to process file: {e}")
+
+
+
 
 
 def select_output_dir(app):

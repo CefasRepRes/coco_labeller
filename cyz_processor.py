@@ -34,6 +34,7 @@ class BlobApp:
 
         self.output_dir = ""
         self.json_file = os.path.join(self.temp_dir, "tempfile.json")
+        self.listmode_file = os.path.join(self.temp_dir, "tempfile.csv")
         self.csv_file = None
         self.image_label = None
         self.tif_files = []
@@ -82,10 +83,13 @@ class BlobApp:
         
         self.path_label = tk.Label(image_frame, text="Path to cyz2json Installation:")
         self.path_label.pack(pady=5)
+
+
         
         self.path_entry = tk.Entry(image_frame, width=100)
         self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
         self.path_entry.pack(pady=5)
+
 
         # r stuff
         self.rcompile_button = tk.Button(image_frame, text="Download r requirements", 
@@ -115,9 +119,13 @@ class BlobApp:
         self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
         self.load_entry.pack(pady=5)
         
+        
         self.load_button = tk.Button(image_frame, text="Convert to json", command=lambda: functions.load_file(self.path_entry.get(), self.load_entry.get(), self.json_file))
         self.load_button.pack(pady=10)
-        
+
+        self.listmode_button = tk.Button(image_frame, text="Convert to listmode csv", command=lambda: functions.to_listmode(self.json_file, self.listmode_file))
+        self.listmode_button.pack(pady=10)
+                
         self.output_dir_button = tk.Button(image_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
         self.output_dir_button.pack(pady=10)
         
