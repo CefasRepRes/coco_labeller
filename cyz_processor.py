@@ -35,6 +35,7 @@ class BlobApp:
         self.output_dir = ""
         self.json_file = os.path.join(self.temp_dir, "tempfile.json")
         self.listmode_file = os.path.join(self.temp_dir, "tempfile.csv")
+        self.inferences_file = os.path.join(self.temp_dir, "predictions.csv")
         self.csv_file = None
         self.image_label = None
         self.tif_files = []
@@ -124,6 +125,9 @@ class BlobApp:
         self.load_button.pack(pady=10)
 
         self.listmode_button = tk.Button(image_frame, text="Convert to listmode csv", command=lambda: functions.to_listmode(self.json_file, self.listmode_file))
+        self.listmode_button.pack(pady=10)
+                
+        self.listmode_button = tk.Button(image_frame, text="Apply r inference to listmode csv", command=lambda: functions.apply_r(self.listmode_file, self.inferences_file, self.rpath_entry.get()))
         self.listmode_button.pack(pady=10)
                 
         self.output_dir_button = tk.Button(image_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
