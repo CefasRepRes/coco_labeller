@@ -29,6 +29,8 @@ expected_terms <- get_model_terms(model)
 # Name mismatches... try fixing by substituting . for _
 if(any(!expected_terms %in% names(stratified_data))){
   colnames(stratified_data) <- gsub("\\.", "_", colnames(stratified_data))}
+print(expected_terms)
+print(colnames(stratified_data))
 if(any(!expected_terms %in% names(stratified_data))){stop("Variable names expected by model are not in your data")}
   
 model_data <- stratified_data[, expected_terms]

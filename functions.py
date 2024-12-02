@@ -99,7 +99,7 @@ def apply_r(listmode_file, predictions_file, rpath_entry):
         print(rpath_entry)
         print(listmode_file)
         print(predictions_file)
-        subprocess.run([rpath_entry, "rf_predict.R", "19_&__FINAL_PELTIC_TRAIN_strat.csv_final_rf_model.rds", listmode_file, predictions_file], check=True)
+        subprocess.run([rpath_entry, "rf_predict.R", "final_rf_model.rds", listmode_file, predictions_file], check=True)
         messagebox.showinfo("Success", f"Listmode extracted successfully. Output: {listmode_file}")
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Processing Error", f"Failed to process file: {e}. Is R installed here?")
