@@ -37,6 +37,24 @@ def compile_cyz2json(clone_dir, path_entry):
         messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
 
+
+def compile_r_requirements(r_dir, rpath_entry):
+    """Get R requirements"""
+#    if os.path.exists(r_dir):
+#        messagebox.showinfo("Info", "r installation already exists in " + r_dir)
+#        return
+    try:
+        subprocess.run(["curl", "https://cran.r-project.org/bin/windows/base/old/4.3.3/R-4.3.3-win.exe", "--output", r_dir+"/R-4.3.3-win.exe"], check=True)
+        subprocess.run([r_dir+"/R-4.3.3-win.exe", "/DIR="+r_dir], cwd=r_dir, check=True)
+        subprocess.run([r_dir+"/bin/Rscript.exe", "./install_rpackages.R"], check=True)
+        rpath_entry.delete(0, tk.END)
+        rpath_entry.insert(0, os.path.join(r_dir, "bin", "Rscript.exe"))
+    except subprocess.CalledProcessError as e:
+        messagebox.showerror("Compilation Error", f"Failed to compile r: {e}.")
+    except Exception as e:
+        messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
+
 def download_file(url_entry, temp_dir, load_entry):
     """Download the file from the specified URL."""
     url = url_entry.get()

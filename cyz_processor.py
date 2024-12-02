@@ -17,6 +17,7 @@ class BlobApp:
         self.root.geometry("800x600")
         self.temp_dir = os.path.join(tempfile.gettempdir(), "BlobAppTemp")
         self.clone_dir = os.path.join(self.temp_dir, "cyz2json")
+        self.r_dir = os.path.join(self.temp_dir, "")
         os.makedirs(self.temp_dir, exist_ok=True)
 
         self.species_dict = {
@@ -85,6 +86,19 @@ class BlobApp:
         self.path_entry = tk.Entry(image_frame, width=100)
         self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
         self.path_entry.pack(pady=5)
+
+        # r stuff
+        self.rcompile_button = tk.Button(image_frame, text="Download r requirements", 
+                                        command=lambda: functions.compile_r_requirements(self.r_dir, self.rpath_entry))
+        self.rcompile_button.pack(pady=10)
+        
+        self.rpath_label = tk.Label(image_frame, text="Path to r Installation:")
+        self.rpath_label.pack(pady=5)
+        
+        self.rpath_entry = tk.Entry(image_frame, width=100)
+        self.rpath_entry.insert(0, self.r_dir + "./R-4.3.3/bin/Rscript.exe")
+        self.rpath_entry.pack(pady=5)
+
         
         self.url_label = tk.Label(image_frame, text="Blob File URL:")
         self.url_label.pack(pady=5)
