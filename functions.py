@@ -8,6 +8,10 @@ from PIL import Image, ImageTk
 import tkinter as tk
 import csv
 from listmode import extract
+import plotly.graph_objects as go
+import plotly.io as pio
+import numpy as np
+
 
 def clear_temp_folder(temp_dir):
     """Clear the temporary directory."""
@@ -176,4 +180,63 @@ def save_metadata(current_image_index, tif_files, metadata, confidence_entry, sp
         writer.writerow(["Image File", "confidence", "Suspected Species"])
         for image, data in metadata.items():
             writer.writerow([image, data["confidence"], data["species"]])
+
+
+def plot3d(predictions_file):
+    data = pd.read_csv(predictions_file)
+    data['category'] = data['predictions_data']
+    unique_categories = data['category'].unique()
+
+    preset_colors = {
+        'rednano': 'red',
+        'orapicoprok': 'orange',
+        'micro': 'blue',
+        'beads': 'green',
+        'oranano': 'purple',
+        'noise': 'gray',
+        'C_undetermined': 'black',
+        'redpico': 'pink'
+    }
+
+    color_map = {
+        category: preset_colors.get(
+            category,
+            f"rgb({np.random.randint(0, 256)}, {np.random.randint(0, 256)}, {np.random.randint(0, 256)})"
+        ) for category in unique_categories
+    }
+    data['color'] = data['category'].map(color_map)
+
+    x_99 = np.percentile(data['Fl.Yellow_total'], 99.5)
+    y_99 = np.percentile(data['Fl.Red_total'], 99.5)
+    z_99 = np.percentile(data['Fl.Orange_total'], 99.5)
+
+    scatter = go.Scatter3d(
+        x=data['Fl.Yellow_total'],
+        y=data['Fl.Red_total'],
+        z=data['Fl.Orange_total'],
+        mode='markers',
+        marker=dict(size=5, color=data['color'], showscale=False),
+        text=data['category'],
+        name='Data Points'
+    )
+
+    camera = dict(
+        eye=dict(x=-1.5, y=-1.5, z=1.5),  
+        center=dict(x=0, y=0, z=0),        
+        up=dict(x=0, y=0, z=1)            
+    )
+    fig = go.Figure(data=[scatter])
+
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(range=[0, x_99], title='Fl.Yellow_total'),
+            yaxis=dict(range=[0, y_99], title='FL.Red_total'),
+            zaxis=dict(range=[0, z_99], title='FL.Orange_total'),
+            camera=camera
+        ),
+        title='3D Data Points'
+    )
+    pio.write_html(fig, file=predictions_file+"_3d.html", auto_open=True)
+
+    print("Plot saved as '3D_Plot.html'.")
 

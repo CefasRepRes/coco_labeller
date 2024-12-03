@@ -9,6 +9,8 @@ import os
 import pandas as pd
 import functions
 from tkinter import ttk
+import numpy as np
+import plotly
 
 class BlobApp:
     def __init__(self, root):
@@ -127,8 +129,11 @@ class BlobApp:
         self.listmode_button = tk.Button(image_frame, text="Convert to listmode csv", command=lambda: functions.to_listmode(self.json_file, self.listmode_file))
         self.listmode_button.pack(pady=10)
                 
-        self.listmode_button = tk.Button(image_frame, text="Apply r inference to listmode csv", command=lambda: functions.apply_r(self.listmode_file, self.inferences_file, self.rpath_entry.get()))
-        self.listmode_button.pack(pady=10)
+        self.infer_button = tk.Button(image_frame, text="Apply r inference to listmode csv", command=lambda: functions.apply_r(self.listmode_file, self.inferences_file, self.rpath_entry.get()))
+        self.infer_button.pack(pady=10)
+                
+        self.plot_button = tk.Button(image_frame, text="Make 3d plot", command=lambda: functions.plot3d(self.inferences_file))
+        self.plot_button.pack(pady=10)
                 
         self.output_dir_button = tk.Button(image_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
         self.output_dir_button.pack(pady=10)
