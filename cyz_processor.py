@@ -9,8 +9,6 @@ import os
 import pandas as pd
 import functions
 from tkinter import ttk
-import numpy as np
-import plotly
 
 class BlobApp:
     def __init__(self, root):
@@ -137,7 +135,10 @@ class BlobApp:
                 
         self.output_dir_button = tk.Button(image_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
         self.output_dir_button.pack(pady=10)
-                
+        
+        self.process_button = tk.Button(image_frame, text="Extract images and associated data", command=self.process_file)
+        self.process_button.pack(pady=10)
+                        
         self.prev_button = tk.Button(image_frame, text="Previous", command=self.prev_image, state=tk.DISABLED)
         self.next_button = tk.Button(image_frame, text="Next", command=self.next_image, state=tk.DISABLED)
         self.prev_button.pack(side=tk.LEFT, padx=20)
@@ -187,7 +188,7 @@ class BlobApp:
             return
         self.csv_file = os.path.join(self.output_dir, "particles_data.csv")
         try:
-            subprocess.run(["python", "./listmode.py", self.json_file, '--output', self.csv_file, self.output_dir, self.output_dir], check=True)
+            subprocess.run(["python", "./listmode_particleswithimagesonly.py", self.json_file, '--output', self.csv_file, self.output_dir, self.output_dir], check=True)
             particles_with_images = pd.read_csv(self.csv_file)['id'].tolist()
             json_data = functions.load_json(self.json_file)
             selected_particles = functions.select_particles(json_data, particle_ids=particles_with_images)
