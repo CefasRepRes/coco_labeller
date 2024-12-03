@@ -132,10 +132,7 @@ class BlobApp:
                 
         self.output_dir_button = tk.Button(image_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
         self.output_dir_button.pack(pady=10)
-        
-        self.process_button = tk.Button(image_frame, text="Extract images and associated data", command=self.process_file)
-        self.process_button.pack(pady=10)
-        
+                
         self.prev_button = tk.Button(image_frame, text="Previous", command=self.prev_image, state=tk.DISABLED)
         self.next_button = tk.Button(image_frame, text="Next", command=self.next_image, state=tk.DISABLED)
         self.prev_button.pack(side=tk.LEFT, padx=20)
