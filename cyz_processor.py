@@ -42,126 +42,129 @@ class BlobApp:
         self.current_image_index = 0
         self.metadata = {}
 
-
         self.create_widgets()
-
-        for key in self.species_dict.keys():
-            self.root.bind(f'<Shift-{key.upper()}>', self.set_species)
-        
-        self.root.bind('<plus>', self.increase_confidence)
-        self.root.bind('<minus>', self.decrease_confidence)
-        self.root.bind('<Shift-space>', self.next_image)
-        
+        self.bind_keys()
         functions.clear_temp_folder(self.temp_dir)
 
-
     def create_widgets(self):
-        # Frame for image and navigation buttons
-        image_frame = tk.Frame(self.root)
-        image_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
-        # Key bindings table on the right side
-        table_frame = tk.Frame(self.root)
-        table_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=10, pady=10)
-        
+        # Create Notebook for tabs
+        notebook = ttk.Notebook(self.root)
+        notebook.pack(fill=tk.BOTH, expand=True)
+
+        # First tab for initial setup
+        setup_frame = tk.Frame(notebook)
+        notebook.add(setup_frame, text="Setup")
+
+        # Second tab for blob file processing
+        process_frame = tk.Frame(notebook)
+        notebook.add(process_frame, text="Process Blob File")
+
+        # Third tab for blob file processing
+        keybindings_frame = tk.Frame(notebook)
+        notebook.add(keybindings_frame, text="Key bindings")
+
+        # Widgets for the first tab (setup)
+        self.compile_button = tk.Button(setup_frame, text="Download and compile cyz2json tool (required)", 
+                                        command=lambda: functions.compile_cyz2json(self.clone_dir, self.path_entry))
+        self.compile_button.pack(pady=10)
+
+        self.path_label = tk.Label(setup_frame, text="Path to cyz2json Installation:")
+        self.path_label.pack(pady=5)
+
+        self.path_entry = tk.Entry(setup_frame, width=100)
+        self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
+        self.path_entry.pack(pady=5)
+
+        self.rcompile_button = tk.Button(setup_frame, text="Download r requirements", 
+                                         command=lambda: functions.compile_r_requirements(self.r_dir, self.rpath_entry))
+        self.rcompile_button.pack(pady=10)
+
+        self.rpath_label = tk.Label(setup_frame, text="Path to r Installation:")
+        self.rpath_label.pack(pady=5)
+
+        self.rpath_entry = tk.Entry(setup_frame, width=100)
+        self.rpath_entry.insert(0, self.r_dir + "./R-4.3.3/bin/Rscript.exe")
+        self.rpath_entry.pack(pady=5)
+
+        # Widgets for the second tab (process blob file)
+        self.url_label = tk.Label(process_frame, text="Blob File URL:")
+        self.url_label.pack(pady=5)
+        self.url_entry = tk.Entry(process_frame, width=100)
+        self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
+        self.url_entry.pack(pady=5)
+
+        self.download_button = tk.Button(process_frame, text="Download", command=lambda: functions.download_file(self.url_entry, self.temp_dir, self.load_entry))
+        self.download_button.pack(pady=10)
+
+        self.load_label = tk.Label(process_frame, text="Load File Path:")
+        self.load_label.pack(pady=5)
+        self.load_entry = tk.Entry(process_frame, width=100)
+        self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
+        self.load_entry.pack(pady=5)
+
+        self.output_dir_button = tk.Button(process_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
+        self.output_dir_button.pack(pady=10)
+
+        self.load_button = tk.Button(process_frame, text="Convert to json", command=lambda: functions.load_file(self.path_entry.get(), self.load_entry.get(), self.json_file))
+        self.load_button.pack(pady=10)
+
+        self.listmode_button = tk.Button(process_frame, text="Convert to listmode csv", command=lambda: functions.to_listmode(self.json_file, self.listmode_file))
+        self.listmode_button.pack(pady=10)
+
+        self.infer_button = tk.Button(process_frame, text="Apply r inference to listmode csv", command=lambda: functions.apply_r(self.listmode_file, self.inferences_file, self.rpath_entry.get()))
+        self.infer_button.pack(pady=10)
+
+        self.plot_button = tk.Button(process_frame, text="Make 3d plot", command=lambda: functions.plot3d(self.inferences_file))
+        self.plot_button.pack(pady=10)
+
+        self.process_button = tk.Button(process_frame, text="Extract images and associated data", command=self.process_file)
+        self.process_button.pack(pady=10)
+
+        self.prev_button = tk.Button(process_frame, text="Previous", command=self.prev_image, state=tk.DISABLED)
+        self.next_button = tk.Button(process_frame, text="Next", command=self.next_image, state=tk.DISABLED)
+        self.prev_button.pack(side=tk.LEFT, padx=20)
+        self.next_button.pack(side=tk.RIGHT, padx=20)
+
+        self.confidence_label = tk.Label(process_frame, text="Optional: Assign a confidence to your label with + -")
+        self.confidence_label.pack(pady=5)
+        self.confidence_entry = tk.Entry(process_frame, width=10)
+        self.confidence_entry.pack(pady=5)
+
+        self.species_label = tk.Label(process_frame, text="Suspected Species:")
+        self.species_label.pack(pady=5)
+        self.species_entry = tk.Entry(process_frame, width=100)
+        self.species_entry.pack(pady=5)
+
+        # Key bindings table on the right side of the setup tab
+        table_frame = tk.Frame(keybindings_frame)
+        table_frame.pack(fill=tk.Y, padx=10, pady=10)
+
         key_table_label = tk.Label(table_frame, text="Key Bindings:")
         key_table_label.pack(pady=5)
-        
+
         key_table = ttk.Treeview(table_frame, columns=("Key", "Description"), show="headings", height=8)
         key_table.heading("Key", text="Key")
         key_table.heading("Description", text="Description")
         key_table.column("Key", anchor="center", width=80)
         key_table.column("Description", anchor="w", width=400)
         key_table.pack(pady=5)
-        
+
         for key, description in self.species_dict.items():
             key_table.insert("", "end", values=(f"Shift+{key.upper()}", description))
-        
-        # Buttons and other inputs on the left (image frame)
-        self.compile_button = tk.Button(image_frame, text="Download and compile cyz2json tool (required)", 
-                                        command=lambda: functions.compile_cyz2json(self.clone_dir, self.path_entry))
-        self.compile_button.pack(pady=10)
-        
-        self.path_label = tk.Label(image_frame, text="Path to cyz2json Installation:")
-        self.path_label.pack(pady=5)
 
+    def bind_keys(self):
+        for key in self.species_dict.keys():
+            self.root.bind(f'<Shift-{key.upper()}>', self.set_species)
+        
+        self.root.bind('<plus>', self.increase_confidence)
+        self.root.bind('<minus>', self.decrease_confidence)
+        self.root.bind('<Shift-space>', self.next_image)
 
-        
-        self.path_entry = tk.Entry(image_frame, width=100)
-        self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
-        self.path_entry.pack(pady=5)
-
-
-        # r stuff
-        self.rcompile_button = tk.Button(image_frame, text="Download r requirements", 
-                                        command=lambda: functions.compile_r_requirements(self.r_dir, self.rpath_entry))
-        self.rcompile_button.pack(pady=10)
-        
-        self.rpath_label = tk.Label(image_frame, text="Path to r Installation:")
-        self.rpath_label.pack(pady=5)
-        
-        self.rpath_entry = tk.Entry(image_frame, width=100)
-        self.rpath_entry.insert(0, self.r_dir + "./R-4.3.3/bin/Rscript.exe")
-        self.rpath_entry.pack(pady=5)
-
-        
-        self.url_label = tk.Label(image_frame, text="Blob File URL:")
-        self.url_label.pack(pady=5)
-        self.url_entry = tk.Entry(image_frame, width=100)
-        self.url_entry.insert(0, "https://citprodflowcytosa.blob.core.windows.net/public/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
-        self.url_entry.pack(pady=5)
-        
-        self.download_button = tk.Button(image_frame, text="Download", command=lambda: functions.download_file(self.url_entry, self.temp_dir, self.load_entry))
-        self.download_button.pack(pady=10)
-        
-        self.load_label = tk.Label(image_frame, text="Load File Path:")
-        self.load_label.pack(pady=5)
-        self.load_entry = tk.Entry(image_frame, width=100)
-        self.load_entry.insert(0, "C:/Users/JR13/Downloads/ThamesSTN6MA4_9%202023-10-16%2011h24.cyz")
-        self.load_entry.pack(pady=5)
-        
-        
-        self.load_button = tk.Button(image_frame, text="Convert to json", command=lambda: functions.load_file(self.path_entry.get(), self.load_entry.get(), self.json_file))
-        self.load_button.pack(pady=10)
-
-        self.listmode_button = tk.Button(image_frame, text="Convert to listmode csv", command=lambda: functions.to_listmode(self.json_file, self.listmode_file))
-        self.listmode_button.pack(pady=10)
-                
-        self.infer_button = tk.Button(image_frame, text="Apply r inference to listmode csv", command=lambda: functions.apply_r(self.listmode_file, self.inferences_file, self.rpath_entry.get()))
-        self.infer_button.pack(pady=10)
-                
-        self.plot_button = tk.Button(image_frame, text="Make 3d plot", command=lambda: functions.plot3d(self.inferences_file))
-        self.plot_button.pack(pady=10)
-                
-        self.output_dir_button = tk.Button(image_frame, text="Select Output Directory", command=lambda: functions.select_output_dir(self))
-        self.output_dir_button.pack(pady=10)
-        
-        self.process_button = tk.Button(image_frame, text="Extract images and associated data", command=self.process_file)
-        self.process_button.pack(pady=10)
-                        
-        self.prev_button = tk.Button(image_frame, text="Previous", command=self.prev_image, state=tk.DISABLED)
-        self.next_button = tk.Button(image_frame, text="Next", command=self.next_image, state=tk.DISABLED)
-        self.prev_button.pack(side=tk.LEFT, padx=20)
-        self.next_button.pack(side=tk.RIGHT, padx=20)
-        
-        self.confidence_label = tk.Label(image_frame, text="Optional: Assign a confidence to your label with + -")
-        self.confidence_label.pack(pady=5)
-        self.confidence_entry = tk.Entry(image_frame, width=10)
-        self.confidence_entry.pack(pady=5)
-        
-        self.species_label = tk.Label(image_frame, text="Suspected Species:")
-        self.species_label.pack(pady=5)
-        self.species_entry = tk.Entry(image_frame, width=100)
-        self.species_entry.pack(pady=5)
-
-    
-    
     def set_species(self, event):
         key_pressed = event.keysym.lower()
         if key_pressed in self.species_dict:
             self.species_entry.delete(0, tk.END)
             self.species_entry.insert(0, self.species_dict[key_pressed])
-
 
     def increase_confidence(self, event):
         current_value = self.confidence_entry.get()
