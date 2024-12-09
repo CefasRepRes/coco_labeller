@@ -33,7 +33,6 @@ def compile_cyz2json(clone_dir, path_entry):
     try:
         subprocess.run(["git", "clone", "https://github.com/OBAMANEXT/cyz2json.git", clone_dir], check=True)
         subprocess.run(["dotnet", "build", "-o", "bin"], cwd=clone_dir, check=True)
-        messagebox.showinfo("Success", "cyz2json downloaded and compiled successfully!")
         path_entry.delete(0, tk.END)
         path_entry.insert(0, os.path.join(clone_dir, "bin", "Cyz2Json.dll"))
     except subprocess.CalledProcessError as e:

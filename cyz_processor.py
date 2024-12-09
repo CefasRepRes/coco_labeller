@@ -9,6 +9,8 @@ import os
 import pandas as pd
 import functions
 from tkinter import ttk
+import threading
+import time
 
 class BlobApp:
     def __init__(self, root):
@@ -46,6 +48,9 @@ class BlobApp:
         self.bind_keys()
         functions.clear_temp_folder(self.temp_dir)
 
+
+
+
     def create_widgets(self):
         # Create Notebook for tabs
         notebook = ttk.Notebook(self.root)
@@ -63,10 +68,13 @@ class BlobApp:
         keybindings_frame = tk.Frame(notebook)
         notebook.add(keybindings_frame, text="Key bindings")
 
+        # Status label for displaying messages
+        self.status_label = tk.Label(setup_frame, text="", fg="blue", font=("Helvetica", 16))
+        self.status_label.pack(pady=20)
+
         # Widgets for the first tab (setup)
-        self.compile_button = tk.Button(setup_frame, text="Download and compile cyz2json tool (required)", 
-                                        command=lambda: functions.compile_cyz2json(self.clone_dir, self.path_entry))
-        self.compile_button.pack(pady=10)
+        self.install_button = tk.Button(setup_frame, text="Install All Requirements", command=self.install_all_requirements)
+        self.install_button.pack(pady=10)
 
         self.path_label = tk.Label(setup_frame, text="Path to cyz2json Installation:")
         self.path_label.pack(pady=5)
@@ -75,11 +83,7 @@ class BlobApp:
         self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
         self.path_entry.pack(pady=5)
 
-        self.rcompile_button = tk.Button(setup_frame, text="Download r requirements", 
-                                         command=lambda: functions.compile_r_requirements(self.r_dir, self.rpath_entry))
-        self.rcompile_button.pack(pady=10)
-
-        self.rpath_label = tk.Label(setup_frame, text="Path to r Installation:")
+        self.rpath_label = tk.Label(setup_frame, text="Path to R Installation:")
         self.rpath_label.pack(pady=5)
 
         self.rpath_entry = tk.Entry(setup_frame, width=100)
@@ -236,6 +240,52 @@ class BlobApp:
                                     self.tif_files, self.metadata, self.confidence_entry, self.species_entry)
             functions.update_navigation_buttons(self.prev_button, self.next_button, 
                                                 self.current_image_index, len(self.tif_files))
+                                                    
+
+    def install_all_requirements(self):
+        # Update the status label to display the "installing dependencies..." message
+        self.status_label.config(text="Installing dependencies...")
+        self.root.update()
+
+        # Prompt user to specify installation directory
+        install_dir = filedialog.asksaveasfilename(title="Select or Type Directory to Install Requirements", 
+                                                   defaultextension="", filetypes=[("Directory", "*.*")])
+        if not install_dir:
+            messagebox.showerror("Installation Directory Not Selected", "Please select or type a directory to install the requirements.")
+            self.status_label.config(text="")  # Clear the status label
+            return
+
+        # Remove the file extension if any (since asksaveasfilename adds a file extension)
+        install_dir = os.path.splitext(install_dir)[0]
+
+        # Create the directory if it doesn't exist
+        if not os.path.exists(install_dir):
+            os.makedirs(install_dir)
+            os.makedirs(install_dir + "/R")
+
+        self.clone_dir = os.path.join(install_dir, "cyz2json")
+        self.r_dir = os.path.join(install_dir, "R")
+
+        # Update path entries
+        self.path_entry.delete(0, tk.END)
+        self.path_entry.insert(0, self.clone_dir + "\\bin\\Cyz2Json.dll")
+        self.rpath_entry.delete(0, tk.END)
+        self.rpath_entry.insert(0, self.r_dir + "./R-4.3.3/bin/Rscript.exe")
+
+        try:
+            # Install cyz2json
+            functions.compile_cyz2json(self.clone_dir, self.path_entry)
+
+            # Install R requirements
+            functions.compile_r_requirements(self.r_dir, self.rpath_entry)
+
+            messagebox.showinfo("Installation Complete", "All requirements have been installed successfully.")
+        except Exception as e:
+            messagebox.showerror("Installation Error", f"Failed to install requirements: {e}")
+
+        # Clear the status message
+        self.status_label.config(text="")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
