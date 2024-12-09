@@ -93,6 +93,7 @@ def to_listmode(json_file, listmode_file):
         df = pd.DataFrame(lines)
         #df.insert(loc=0, column="filename", value=os.path.basename(filename))
         df.to_csv(listmode_file, index=False)
+        messagebox.showinfo("Processed", f"Listmode extracted successfully. Output: {listmode_file}")
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Processing Error", f"Failed to process file: {e}")
 
@@ -103,7 +104,7 @@ def apply_r(listmode_file, predictions_file, rpath_entry):
         print(listmode_file)
         print(predictions_file)
         subprocess.run([rpath_entry, "rf_predict.R", "final_rf_model.rds", listmode_file, predictions_file], check=True)
-        messagebox.showinfo("Success", f"Listmode extracted successfully. Output: {listmode_file}")
+        messagebox.showinfo("Success", f"R applied successfully")
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Processing Error", f"Failed to process file: {e}. Is R installed here?")
 
